@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { FiUpload, FiDownload, FiFolder, FiFile, FiSave, FiHardDrive } from "react-icons/fi";
@@ -10,6 +10,29 @@ export default function SaveLoadPage() {
   const [status, setStatus] = useState("");
   const [fileCount, setFileCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load saved state from localStorage
+  useEffect(() => {
+    const savedStatus = localStorage.getItem("saveLoadStatus");
+    if (savedStatus) {
+      try {
+        const statusObj = JSON.parse(savedStatus);
+        setStatus(statusObj.message || "");
+        setFileCount(statusObj.fileCount || 0);
+      } catch (e) {
+        console.error("Failed to parse save/load status", e);
+      }
+    }
+  }, []);
+
+  // Save status to localStorage
+  useEffect(() => {
+    const statusObj = {
+      message: status,
+      fileCount: fileCount
+    };
+    localStorage.setItem("saveLoadStatus", JSON.stringify(statusObj));
+  }, [status, fileCount]);
 
   const handleSaveData = async () => {
     setLoading(true);
@@ -22,6 +45,8 @@ export default function SaveLoadPage() {
       // Get all data from localStorage
       const bookmarks = localStorage.getItem("bookmarks");
       const todos = localStorage.getItem("todos");
+      const calculatorState = localStorage.getItem("calculatorState");
+      const imageTilesState = localStorage.getItem("imageTilesState");
       
       // Add data files to ZIP
       if (bookmarks) {
@@ -30,6 +55,14 @@ export default function SaveLoadPage() {
       
       if (todos) {
         zip.file("todos.json", todos);
+      }
+      
+      if (calculatorState) {
+        zip.file("calculator-state.json", calculatorState);
+      }
+      
+      if (imageTilesState) {
+        zip.file("image-tiles-state.json", imageTilesState);
       }
       
       // Add documents from todos to ZIP
@@ -58,7 +91,7 @@ export default function SaveLoadPage() {
         }
       }
       
-      setFileCount(docCount + (bookmarks ? 1 : 0) + (todos ? 1 : 0));
+      setFileCount(docCount + (bookmarks ? 1 : 0) + (todos ? 1 : 0) + (calculatorState ? 1 : 0) + (imageTilesState ? 1 : 0));
       
       // Generate ZIP file
       setStatus("Creating ZIP archive...");
@@ -110,6 +143,22 @@ export default function SaveLoadPage() {
         if (todosFile) {
           const todosContent = await todosFile.async("text");
           localStorage.setItem("todos", todosContent);
+          loadedFiles++;
+        }
+        
+        // Load calculator state
+        const calculatorStateFile = contents.file("calculator-state.json");
+        if (calculatorStateFile) {
+          const calculatorStateContent = await calculatorStateFile.async("text");
+          localStorage.setItem("calculatorState", calculatorStateContent);
+          loadedFiles++;
+        }
+        
+        // Load image tiles state
+        const imageTilesStateFile = contents.file("image-tiles-state.json");
+        if (imageTilesStateFile) {
+          const imageTilesStateContent = await imageTilesStateFile.async("text");
+          localStorage.setItem("imageTilesState", imageTilesStateContent);
           loadedFiles++;
         }
         
@@ -184,6 +233,14 @@ export default function SaveLoadPage() {
                 <li className="flex items-center">
                   <FiFolder className="mr-2 text-blue-500" />
                   Todo lists and notes
+                </li>
+                <li className="flex items-center">
+                  <FiFolder className="mr-2 text-blue-500" />
+                  Calculator state
+                </li>
+                <li className="flex items-center">
+                  <FiFolder className="mr-2 text-blue-500" />
+                  Image tile generator settings
                 </li>
                 <li className="flex items-center">
                   <FiFile className="mr-2 text-blue-500" />

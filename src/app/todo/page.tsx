@@ -1,91 +1,28 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { FiPlus, FiPaperclip, FiTrash2, FiEye, FiDownload } from "react-icons/fi";
-
-type Document = {
-  id: string;
-  name: string;
-  type: string;
-  url: string;
-  file?: File;
-};
-
-type Todo = {
-  id: string;
-  title: string;
-  note: string;
-  completed: boolean;
-  documents: Document[];
-  createdAt: Date;
-};
+import { useTodos, type Document, type Todo } from "@/hooks/useTodos";
 
 export default function TodoPage() {
-  const [todos, setTodos] = useState<Todo[]>([]);
+  const { todos, loading, addTodo, updateTodo, deleteTodo, toggleTodo, addDocument, removeDocument } = useTodos();
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const [documents, setDocuments] = useState<FileList | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load todos from localStorage on component mount
-  useEffect(() => {
-    const savedTodos = localStorage.getItem("todos");
-    if (savedTodos) {
-      try {
-        const parsedTodos = JSON.parse(savedTodos);
-        // Convert date strings back to Date objects
-        const todosWithDates = parsedTodos.map((todo: any) => ({
-          ...todo,
-          createdAt: new Date(todo.createdAt),
-          documents: todo.documents || []
-        }));
-        setTodos(todosWithDates);
-      } catch (e) {
-        console.error("Failed to parse todos", e);
-      }
-    }
-  }, []);
-
-  // Save todos to localStorage whenever they change
-  useEffect(() => {
-    // Convert Date objects to strings for JSON serialization
-    const todosToSave = todos.map(todo => ({
-      ...todo,
-      createdAt: todo.createdAt.toISOString(),
-      documents: todo.documents.map(doc => ({
-        ...doc,
-        file: undefined // Don't save the actual file object
-      }))
-    }));
-    localStorage.setItem("todos", JSON.stringify(todosToSave));
-  }, [todos]);
-
   const handleAddTodo = () => {
     if (!title.trim()) return;
 
-    const newTodo: Todo = {
-      id: Date.now().toString(),
-      title,
-      note,
-      completed: false,
-      documents: [],
-      createdAt: new Date(),
-    };
-
-    setTodos([...todos, newTodo]);
+    addTodo({ title, note, completed: false });
     resetForm();
   };
 
   const handleUpdateTodo = () => {
     if (!editingId || !title.trim()) return;
 
-    setTodos(todos.map(todo => 
-      todo.id === editingId 
-        ? { ...todo, title, note } 
-        : todo
-    ));
-    
+    updateTodo(editingId, { title, note });
     setEditingId(null);
     resetForm();
   };
@@ -97,15 +34,11 @@ export default function TodoPage() {
   };
 
   const handleDeleteTodo = (id: string) => {
-    setTodos(todos.filter(todo => todo.id !== id));
+    deleteTodo(id);
   };
 
   const handleToggleComplete = (id: string) => {
-    setTodos(todos.map(todo => 
-      todo.id === id 
-        ? { ...todo, completed: !todo.completed } 
-        : todo
-    ));
+    toggleTodo(id);
   };
 
   const resetForm = () => {
@@ -126,30 +59,17 @@ export default function TodoPage() {
   const handleAddDocuments = (todoId: string) => {
     if (!documents) return;
 
-    const updatedTodos = todos.map(todo => {
-      if (todo.id === todoId) {
-        const newDocuments: Document[] = [];
-        
-        for (let i = 0; i < documents.length; i++) {
-          const file = documents[i];
-          newDocuments.push({
-            id: `${Date.now()}-${i}`,
-            name: file.name,
-            type: file.type,
-            url: URL.createObjectURL(file),
-            file: file
-          });
-        }
-        
-        return {
-          ...todo,
-          documents: [...todo.documents, ...newDocuments]
-        };
-      }
-      return todo;
-    });
+    // In a real app, we would upload the files to a server
+    // For this demo, we'll just store metadata
+    for (let i = 0; i < documents.length; i++) {
+      const file = documents[i];
+      addDocument(todoId, {
+        name: file.name,
+        type: file.type,
+        url: URL.createObjectURL(file),
+      });
+    }
 
-    setTodos(updatedTodos);
     setDocuments(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -157,18 +77,11 @@ export default function TodoPage() {
   };
 
   const handleRemoveDocument = (todoId: string, docId: string) => {
-    setTodos(todos.map(todo => {
-      if (todo.id === todoId) {
-        return {
-          ...todo,
-          documents: todo.documents.filter(doc => doc.id !== docId)
-        };
-      }
-      return todo;
-    }));
+    removeDocument(todoId, docId);
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
@@ -177,6 +90,14 @@ export default function TodoPage() {
       minute: '2-digit'
     }).format(date);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-gray-600">Loading todos...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -254,7 +175,7 @@ export default function TodoPage() {
             </div>
           ) : (
             todos
-              .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
               .map((todo) => (
                 <div 
                   key={todo.id} 

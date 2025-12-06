@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FiUpload, FiDownload, FiImage } from "react-icons/fi";
 
 export default function ImageTilesPage() {
   const [image, setImage] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null); // Store the raw file
   const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
   const [tiles, setTiles] = useState<string[]>([]);
   const [tileWidth, setTileWidth] = useState("210"); // A4 width in mm
@@ -19,6 +20,37 @@ export default function ImageTilesPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Load saved state from localStorage
+  useEffect(() => {
+    const savedState = localStorage.getItem("imageTilesState");
+    if (savedState) {
+      try {
+        const state = JSON.parse(savedState);
+        setTileWidth(state.tileWidth || "210");
+        setTileHeight(state.tileHeight || "297");
+        setTileUnit(state.tileUnit || "mm");
+        setImageWidth(state.imageWidth || "");
+        setImageHeight(state.imageHeight || "");
+        setImageUnit(state.imageUnit || "mm");
+      } catch (e) {
+        console.error("Failed to parse image tiles state", e);
+      }
+    }
+  }, []);
+
+  // Save state to localStorage
+  useEffect(() => {
+    const state = {
+      tileWidth,
+      tileHeight,
+      tileUnit,
+      imageWidth,
+      imageHeight,
+      imageUnit
+    };
+    localStorage.setItem("imageTilesState", JSON.stringify(state));
+  }, [tileWidth, tileHeight, tileUnit, imageWidth, imageHeight, imageUnit]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -29,6 +61,8 @@ export default function ImageTilesPage() {
     }
 
     setError("");
+    setImageFile(file); // Store the raw file
+    
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target?.result) {
@@ -126,82 +160,101 @@ export default function ImageTilesPage() {
     setError("");
     setProcessing(true);
 
-    // Create image object
-    const img = new Image();
-    img.onload = () => {
-      // Calculate pixels per unit for the image
-      const pixelsPerUnitX = img.width / imageWidthNum;
-      const pixelsPerUnitY = img.height / imageHeightNum;
-
-      // Convert tile dimensions to pixels
-      let tileWidthPx, tileHeightPx;
-      if (tileUnit === "mm") {
-        tileWidthPx = tileWidthNum * pixelsPerUnitX;
-        tileHeightPx = tileHeightNum * pixelsPerUnitY;
-      } else {
-        // inches
-        tileWidthPx = tileWidthNum * pixelsPerUnitX;
-        tileHeightPx = tileHeightNum * pixelsPerUnitY;
-      }
-
-      // Calculate number of tiles needed
-      const cols = Math.ceil(img.width / tileWidthPx);
-      const rows = Math.ceil(img.height / tileHeightPx);
-
-      // Generate tiles
-      const newTiles: string[] = [];
-      const canvas = canvasRef.current;
-      if (!canvas) {
-        setProcessing(false);
-        return;
-      }
-
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        setProcessing(false);
-        return;
-      }
-
-      canvas.width = tileWidthPx;
-      canvas.height = tileHeightPx;
-
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-          // Clear canvas
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-          // Fill with white background
-          ctx.fillStyle = "white";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          // Draw image portion
-          const sx = col * tileWidthPx;
-          const sy = row * tileHeightPx;
-          const sw = Math.min(tileWidthPx, img.width - sx);
-          const sh = Math.min(tileHeightPx, img.height - sy);
-
-          ctx.drawImage(
-            img,
-            sx, sy, sw, sh,
-            0, 0, sw, sh
-          );
-
-          // Get data URL of the tile
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
-          newTiles.push(dataUrl);
+    // Create image object from the stored file to preserve quality
+    if (imageFile) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          const img = new Image();
+          img.onload = () => {
+            processImage(img, imageWidthNum, imageHeightNum, tileWidthNum, tileHeightNum);
+          };
+          img.src = event.target.result as string;
         }
+      };
+      reader.readAsDataURL(imageFile);
+    } else {
+      // Fallback to existing image data
+      const img = new Image();
+      img.onload = () => {
+        processImage(img, imageWidthNum, imageHeightNum, tileWidthNum, tileHeightNum);
+      };
+      img.src = image;
+    }
+  };
+
+  const processImage = (
+    img: HTMLImageElement,
+    imageWidthNum: number,
+    imageHeightNum: number,
+    tileWidthNum: number,
+    tileHeightNum: number
+  ) => {
+    // Calculate pixels per unit for the image
+    const pixelsPerUnitX = img.width / imageWidthNum;
+    const pixelsPerUnitY = img.height / imageHeightNum;
+
+    // Convert tile dimensions to pixels
+    let tileWidthPx, tileHeightPx;
+    if (tileUnit === "mm") {
+      tileWidthPx = tileWidthNum * pixelsPerUnitX;
+      tileHeightPx = tileHeightNum * pixelsPerUnitY;
+    } else {
+      // inches
+      tileWidthPx = tileWidthNum * pixelsPerUnitX;
+      tileHeightPx = tileHeightNum * pixelsPerUnitY;
+    }
+
+    // Calculate number of tiles needed
+    const cols = Math.ceil(img.width / tileWidthPx);
+    const rows = Math.ceil(img.height / tileHeightPx);
+
+    // Generate tiles
+    const newTiles: string[] = [];
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      setProcessing(false);
+      return;
+    }
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      setProcessing(false);
+      return;
+    }
+
+    canvas.width = tileWidthPx;
+    canvas.height = tileHeightPx;
+
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Fill with white background
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw image portion
+        const sx = col * tileWidthPx;
+        const sy = row * tileHeightPx;
+        const sw = Math.min(tileWidthPx, img.width - sx);
+        const sh = Math.min(tileHeightPx, img.height - sy);
+
+        ctx.drawImage(
+          img,
+          sx, sy, sw, sh,
+          0, 0, sw, sh
+        );
+
+        // Get data URL of the tile
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.95); // Higher quality
+        newTiles.push(dataUrl);
       }
+    }
 
-      setTiles(newTiles);
-      setProcessing(false);
-    };
-
-    img.onerror = () => {
-      setError("Failed to load image");
-      setProcessing(false);
-    };
-
-    img.src = image;
+    setTiles(newTiles);
+    setProcessing(false);
   };
 
   const handleDownloadTile = (dataUrl: string, index: number) => {
@@ -217,7 +270,7 @@ export default function ImageTilesPage() {
     tiles.forEach((tile, index) => {
       setTimeout(() => {
         handleDownloadTile(tile, index);
-      }, index * 500); // Stagger downloads to avoid browser blocking
+      }, index * 100); // Faster stagger to avoid browser blocking
     });
   };
 

@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { FiRotateCcw } from "react-icons/fi";
+import { FiRotateCcw, FiTrash2 } from "react-icons/fi";
+
+type CalculationHistory = {
+  id: string;
+  expression: string;
+  result: string;
+  timestamp: Date;
+};
 
 export default function CalculatorPage() {
   const [display, setDisplay] = useState("0");
@@ -16,8 +23,71 @@ export default function CalculatorPage() {
   const [searchTo, setSearchTo] = useState("");
   const [isFromDropdownOpen, setIsFromDropdownOpen] = useState(false);
   const [isToDropdownOpen, setIsToDropdownOpen] = useState(false);
+  const [history, setHistory] = useState<CalculationHistory[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
   const fromDropdownRef = useRef<HTMLDivElement>(null);
   const toDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Load saved state from localStorage
+  useEffect(() => {
+    const savedState = localStorage.getItem("calculatorState");
+    if (savedState) {
+      try {
+        const state = JSON.parse(savedState);
+        setDisplay(state.display || "0");
+        setPreviousValue(state.previousValue !== undefined ? state.previousValue : null);
+        setOperation(state.operation || null);
+        setWaitingForOperand(state.waitingForOperand || false);
+        setConversionMode(state.conversionMode || null);
+        setUnitFrom(state.unitFrom || "");
+        setUnitTo(state.unitTo || "");
+        setInputValue(state.inputValue || "");
+      } catch (e) {
+        console.error("Failed to parse calculator state", e);
+      }
+    }
+    
+    // Load history from localStorage
+    const savedHistory = localStorage.getItem("calculatorHistory");
+    if (savedHistory) {
+      try {
+        const parsedHistory = JSON.parse(savedHistory);
+        // Convert timestamp strings back to Date objects
+        const historyWithDates = parsedHistory.map((item: any) => ({
+          ...item,
+          timestamp: new Date(item.timestamp)
+        }));
+        setHistory(historyWithDates);
+      } catch (e) {
+        console.error("Failed to parse calculator history", e);
+      }
+    }
+  }, []);
+
+  // Save state to localStorage
+  useEffect(() => {
+    const state = {
+      display,
+      previousValue,
+      operation,
+      waitingForOperand,
+      conversionMode,
+      unitFrom,
+      unitTo,
+      inputValue
+    };
+    localStorage.setItem("calculatorState", JSON.stringify(state));
+  }, [display, previousValue, operation, waitingForOperand, conversionMode, unitFrom, unitTo, inputValue]);
+
+  // Save history to localStorage
+  useEffect(() => {
+    // Convert Date objects to strings for JSON serialization
+    const historyToSave = history.map(item => ({
+      ...item,
+      timestamp: item.timestamp.toISOString()
+    }));
+    localStorage.setItem("calculatorHistory", JSON.stringify(historyToSave));
+  }, [history]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -58,6 +128,8 @@ export default function CalculatorPage() {
         handleClearClick();
       } else if (e.key === '%') {
         handlePercentage();
+      } else if (e.key === 'h' || e.key === 'H') {
+        setShowHistory(prev => !prev);
       }
     };
 
@@ -66,6 +138,16 @@ export default function CalculatorPage() {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [display, previousValue, operation, waitingForOperand]);
+
+  const addToHistory = (expression: string, result: string) => {
+    const newEntry: CalculationHistory = {
+      id: Date.now().toString(),
+      expression,
+      result,
+      timestamp: new Date()
+    };
+    setHistory(prev => [newEntry, ...prev].slice(0, 50)); // Keep only last 50 entries
+  };
 
   const handleDigitClick = (digit: string) => {
     if (waitingForOperand) {
@@ -107,7 +189,12 @@ export default function CalculatorPage() {
 
     if (previousValue !== null && operation) {
       const newValue = calculate(previousValue, inputValueNum, operation);
-      setDisplay(String(newValue));
+      const resultStr = String(newValue);
+      const expression = `${previousValue} ${operation} ${inputValueNum}`;
+      
+      setDisplay(resultStr);
+      addToHistory(expression, resultStr);
+      
       setPreviousValue(null);
       setOperation(null);
       setWaitingForOperand(true);
@@ -242,6 +329,15 @@ export default function CalculatorPage() {
 
   const conversionResult = convertUnits();
 
+  const clearHistory = () => {
+    setHistory([]);
+  };
+
+  const useHistoryItem = (item: CalculationHistory) => {
+    setDisplay(item.result);
+    setShowHistory(false);
+  };
+
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
@@ -250,137 +346,187 @@ export default function CalculatorPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Standard Calculator */}
           <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Standard Calculator</h2>
-            <div className="bg-gray-100 rounded-lg p-4 mb-4">
-              <div className="text-right text-3xl font-semibold text-gray-800 h-12 overflow-x-auto">
-                {display}
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-800">Standard Calculator</h2>
+              <button
+                onClick={() => setShowHistory(!showHistory)}
+                className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm"
+              >
+                {showHistory ? "Hide History" : "Show History"}
+              </button>
+            </div>
+            
+            {showHistory ? (
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-medium text-gray-700">Calculation History</h3>
+                  {history.length > 0 && (
+                    <button
+                      onClick={clearHistory}
+                      className="text-red-600 hover:text-red-800 flex items-center text-sm"
+                    >
+                      <FiTrash2 className="mr-1" /> Clear
+                    </button>
+                  )}
+                </div>
+                
+                {history.length === 0 ? (
+                  <div className="text-gray-500 text-center py-4">
+                    No history yet
+                  </div>
+                ) : (
+                  <div className="max-h-60 overflow-y-auto">
+                    {history.map((item) => (
+                      <div 
+                        key={item.id} 
+                        className="py-2 border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+                        onClick={() => useHistoryItem(item)}
+                      >
+                        <div className="text-sm text-gray-600">
+                          {item.expression} = {item.result}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {item.timestamp.toLocaleTimeString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-            
-            <div className="grid grid-cols-4 gap-3">
-              <button
-                onClick={handleClearClick}
-                className="col-span-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 rounded"
-              >
-                AC
-              </button>
-              <button
-                onClick={handleToggleSign}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 rounded"
-              >
-                +/-
-              </button>
-              <button
-                onClick={handlePercentage}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 rounded"
-              >
-                %
-              </button>
-              
-              <button
-                onClick={() => handleOperatorClick("÷")}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded"
-              >
-                ÷
-              </button>
-              <button
-                onClick={() => handleDigitClick("7")}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
-              >
-                7
-              </button>
-              <button
-                onClick={() => handleDigitClick("8")}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
-              >
-                8
-              </button>
-              <button
-                onClick={() => handleDigitClick("9")}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
-              >
-                9
-              </button>
-              <button
-                onClick={() => handleOperatorClick("×")}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded"
-              >
-                ×
-              </button>
-              
-              <button
-                onClick={() => handleDigitClick("4")}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
-              >
-                4
-              </button>
-              <button
-                onClick={() => handleDigitClick("5")}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
-              >
-                5
-              </button>
-              <button
-                onClick={() => handleDigitClick("6")}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
-              >
-                6
-              </button>
-              <button
-                onClick={() => handleOperatorClick("-")}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded"
-              >
-                -
-              </button>
-              
-              <button
-                onClick={() => handleDigitClick("1")}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
-              >
-                1
-              </button>
-              <button
-                onClick={() => handleDigitClick("2")}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
-              >
-                2
-              </button>
-              <button
-                onClick={() => handleDigitClick("3")}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
-              >
-                3
-              </button>
-              <button
-                onClick={() => handleOperatorClick("+")}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded"
-              >
-                +
-              </button>
-              
-              <button
-                onClick={() => handleDigitClick("0")}
-                className="col-span-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
-              >
-                0
-              </button>
-              <button
-                onClick={handleDecimalClick}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
-              >
-                .
-              </button>
-              <button
-                onClick={handleEqualsClick}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded"
-              >
-                =
-              </button>
-            </div>
-            
-            <div className="mt-4 text-sm text-gray-500">
-              <p>Keyboard shortcuts: 0-9, +, -, *, /, Enter, Escape, ., %</p>
-            </div>
+            ) : (
+              <>
+                <div className="bg-gray-100 rounded-lg p-4 mb-4">
+                  <div className="text-right text-3xl font-semibold text-gray-800 h-12 overflow-x-auto">
+                    {display}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-4 gap-3">
+                  <button
+                    onClick={handleClearClick}
+                    className="col-span-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 rounded"
+                  >
+                    AC
+                  </button>
+                  <button
+                    onClick={handleToggleSign}
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 rounded"
+                  >
+                    +/-
+                  </button>
+                  <button
+                    onClick={handlePercentage}
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-4 rounded"
+                  >
+                    %
+                  </button>
+                  
+                  <button
+                    onClick={() => handleOperatorClick("÷")}
+                    className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded"
+                  >
+                    ÷
+                  </button>
+                  <button
+                    onClick={() => handleDigitClick("7")}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
+                  >
+                    7
+                  </button>
+                  <button
+                    onClick={() => handleDigitClick("8")}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
+                  >
+                    8
+                  </button>
+                  <button
+                    onClick={() => handleDigitClick("9")}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
+                  >
+                    9
+                  </button>
+                  <button
+                    onClick={() => handleOperatorClick("×")}
+                    className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded"
+                  >
+                    ×
+                  </button>
+                  
+                  <button
+                    onClick={() => handleDigitClick("4")}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
+                  >
+                    4
+                  </button>
+                  <button
+                    onClick={() => handleDigitClick("5")}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
+                  >
+                    5
+                  </button>
+                  <button
+                    onClick={() => handleDigitClick("6")}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
+                  >
+                    6
+                  </button>
+                  <button
+                    onClick={() => handleOperatorClick("-")}
+                    className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded"
+                  >
+                    -
+                  </button>
+                  
+                  <button
+                    onClick={() => handleDigitClick("1")}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
+                  >
+                    1
+                  </button>
+                  <button
+                    onClick={() => handleDigitClick("2")}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
+                  >
+                    2
+                  </button>
+                  <button
+                    onClick={() => handleDigitClick("3")}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
+                  >
+                    3
+                  </button>
+                  <button
+                    onClick={() => handleOperatorClick("+")}
+                    className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded"
+                  >
+                    +
+                  </button>
+                  
+                  <button
+                    onClick={() => handleDigitClick("0")}
+                    className="col-span-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
+                  >
+                    0
+                  </button>
+                  <button
+                    onClick={handleDecimalClick}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded"
+                  >
+                    .
+                  </button>
+                  <button
+                    onClick={handleEqualsClick}
+                    className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded"
+                  >
+                    =
+                  </button>
+                </div>
+                
+                <div className="mt-4 text-sm text-gray-500">
+                  <p>Keyboard shortcuts: 0-9, +, -, *, /, Enter, Escape, ., %, H (toggle history)</p>
+                </div>
+              </>
+            )}
           </div>
           
           {/* Unit Converter */}
@@ -392,9 +538,6 @@ export default function CalculatorPage() {
                 <button
                   onClick={() => {
                     setConversionMode("length");
-                    setUnitFrom("");
-                    setUnitTo("");
-                    setInputValue("");
                   }}
                   className={`px-4 py-2 rounded ${conversionMode === "length" ? "bg-blue-600 text-white" : "bg-gray-200 hover:bg-gray-300"}`}
                 >
@@ -403,9 +546,6 @@ export default function CalculatorPage() {
                 <button
                   onClick={() => {
                     setConversionMode("weight");
-                    setUnitFrom("");
-                    setUnitTo("");
-                    setInputValue("");
                   }}
                   className={`px-4 py-2 rounded ${conversionMode === "weight" ? "bg-blue-600 text-white" : "bg-gray-200 hover:bg-gray-300"}`}
                 >
@@ -414,9 +554,6 @@ export default function CalculatorPage() {
                 <button
                   onClick={() => {
                     setConversionMode("temperature");
-                    setUnitFrom("");
-                    setUnitTo("");
-                    setInputValue("");
                   }}
                   className={`px-4 py-2 rounded ${conversionMode === "temperature" ? "bg-blue-600 text-white" : "bg-gray-200 hover:bg-gray-300"}`}
                 >

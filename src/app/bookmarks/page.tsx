@@ -1,33 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { FiPlus, FiEdit, FiTrash2, FiX, FiSave } from "react-icons/fi";
-
-type Bookmark = {
-  id: string;
-  name: string;
-  url: string;
-};
+import { useBookmarks, type Bookmark } from "@/hooks/useBookmarks";
 
 export default function BookmarksPage() {
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const { bookmarks, loading, addBookmark, updateBookmark, deleteBookmark } = useBookmarks();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentBookmark, setCurrentBookmark] = useState<Bookmark | null>(null);
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
-
-  // Load bookmarks from localStorage on component mount
-  useEffect(() => {
-    const savedBookmarks = localStorage.getItem("bookmarks");
-    if (savedBookmarks) {
-      setBookmarks(JSON.parse(savedBookmarks));
-    }
-  }, []);
-
-  // Save bookmarks to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-  }, [bookmarks]);
 
   const openModal = (bookmark: Bookmark | null = null) => {
     if (bookmark) {
@@ -56,25 +38,22 @@ export default function BookmarksPage() {
     
     if (currentBookmark) {
       // Update existing bookmark
-      setBookmarks(bookmarks.map(b => 
-        b.id === currentBookmark.id ? { ...b, name, url } : b
-      ));
+      updateBookmark(currentBookmark.id, { name, url });
     } else {
       // Add new bookmark
-      const newBookmark: Bookmark = {
-        id: Date.now().toString(),
-        name,
-        url,
-      };
-      setBookmarks([...bookmarks, newBookmark]);
+      addBookmark({ name, url });
     }
     
     closeModal();
   };
 
-  const deleteBookmark = (id: string) => {
-    setBookmarks(bookmarks.filter(bookmark => bookmark.id !== id));
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-gray-600">Loading bookmarks...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
