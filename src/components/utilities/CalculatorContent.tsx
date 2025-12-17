@@ -26,6 +26,9 @@ import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import CalculateRoundedIcon from "@mui/icons-material/CalculateRounded";
 import CompareArrowsRoundedIcon from "@mui/icons-material/CompareArrowsRounded";
+import StraightenIcon from "@mui/icons-material/Straighten";
+import ScaleIcon from "@mui/icons-material/Scale";
+import ThermostatIcon from "@mui/icons-material/Thermostat";
 
 
 type CalculationHistory = {
@@ -506,9 +509,24 @@ export default function CalculatorContent() {
           <Card sx={{ flex: showCalculator ? 1 : undefined }}>
             <CardContent>
               <ToggleButtonGroup value={conversionMode} exclusive onChange={(_e, value) => setConversionMode(value)} fullWidth sx={{ mb: 2 }}>
-                <ToggleButton value="length">Length</ToggleButton>
-                <ToggleButton value="weight">Weight</ToggleButton>
-                <ToggleButton value="temperature">Temperature</ToggleButton>
+                <ToggleButton value="length">
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <StraightenIcon fontSize="small" />
+                    <span>Length</span>
+                  </Stack>
+                </ToggleButton>
+                <ToggleButton value="weight">
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <ScaleIcon fontSize="small" />
+                    <span>Weight</span>
+                  </Stack>
+                </ToggleButton>
+                <ToggleButton value="temperature">
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <ThermostatIcon fontSize="small" />
+                    <span>Temperature</span>
+                  </Stack>
+                </ToggleButton>
               </ToggleButtonGroup>
 
               {conversionMode ? (

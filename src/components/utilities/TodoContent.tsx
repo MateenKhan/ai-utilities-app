@@ -1,13 +1,11 @@
 ﻿"use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import {
   Box,
   Button,
   Card,
-  CardActions,
   CardContent,
-  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
@@ -19,6 +17,12 @@ import {
   Typography,
   Chip,
   Paper,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  InputAdornment,
+  Collapse
 } from "@mui/material";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
@@ -27,11 +31,16 @@ import AttachFileRoundedIcon from "@mui/icons-material/AttachFileRounded";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import FullscreenRoundedIcon from "@mui/icons-material/FullscreenRounded";
 import FullscreenExitRoundedIcon from "@mui/icons-material/FullscreenExitRounded";
+import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
+import RadioButtonUncheckedRoundedIcon from "@mui/icons-material/RadioButtonUncheckedRounded";
+import FilterListRoundedIcon from "@mui/icons-material/FilterListRounded";
+import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 
-import { useTodos, type Todo } from "@/hooks/useTodos";
+import { useTodos, type Todo, type TodoStatus } from "@/hooks/useTodos";
 
 export default function TodoContent() {
-  const { todos, loading, addTodo, updateTodo, deleteTodo, toggleTodo, addDocument, removeDocument } = useTodos();
+  const { todos, states, loading, addTodo, updateTodo, deleteTodo, changeTodoStatus, addDocument, removeDocument, addState, deleteState } = useTodos();
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const [documents, setDocuments] = useState<FileList | null>(null);
@@ -40,6 +49,11 @@ export default function TodoContent() {
   const [minimizedImages, setMinimizedImages] = useState<Record<string, boolean>>({});
   const [attachmentTargetId, setAttachmentTargetId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Filter state
+  const [filterState, setFilterState] = useState<string>("todo"); // Default show 'todo'
+  const [showSettings, setShowSettings] = useState(false);
+  const [newStateLabel, setNewStateLabel] = useState("");
 
   const closeModal = () => {
     setShowModal(false);
@@ -63,7 +77,7 @@ export default function TodoContent() {
       }
     }
 
-    addTodo({ title, note, completed: false, documents: newDocs });
+    addTodo({ title, note, status: 'todo', documents: newDocs });
     closeModal();
   };
 
@@ -142,6 +156,19 @@ export default function TodoContent() {
     setShowModal(true);
   };
 
+  const handleAddState = () => {
+    if (newStateLabel.trim()) {
+      addState(newStateLabel.trim());
+      setNewStateLabel("");
+    }
+  }
+
+  const filteredTodos = useMemo(() => {
+    return todos
+      .filter(t => filterState === 'all' ? true : t.status === filterState)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [todos, filterState]);
+
   if (loading) {
     return (
       <Box minHeight="60vh" display="flex" alignItems="center" justifyContent="center">
@@ -152,52 +179,98 @@ export default function TodoContent() {
 
   return (
     <Box>
-
-
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }} mb={4}>
-        <Box flexGrow={1}>
+      <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }} mb={4} justifyContent="space-between">
+        <Box>
           <Typography variant="h5" fontWeight={700} gutterBottom>
             Todo List
           </Typography>
           <Typography color="text.secondary">
-            Keep track of work, attach supporting documents, and never miss a deadline.
+            Manage your tasks effectively with custom statuses.
           </Typography>
         </Box>
-        <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={openAddTodoModal}>
-          Add New Todo
-        </Button>
+        <Stack direction="row" spacing={2}>
+          <Button variant="outlined" startIcon={<SettingsRoundedIcon />} onClick={() => setShowSettings(!showSettings)}>
+            Manage States
+          </Button>
+          <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={openAddTodoModal}>
+            Add New Todo
+          </Button>
+        </Stack>
       </Stack>
 
-      {todos.length === 0 ? (
+      <Collapse in={showSettings}>
+        <Paper variant="outlined" sx={{ p: 2, mb: 4, bgcolor: 'background.default' }}>
+          <Typography variant="subtitle2" gutterBottom>Manage Custom States</Typography>
+          <Stack direction="row" spacing={2} mb={2}>
+            <TextField
+              size="small"
+              placeholder="New State Name"
+              value={newStateLabel}
+              onChange={(e) => setNewStateLabel(e.target.value)}
+            />
+            <Button variant="contained" onClick={handleAddState} disabled={!newStateLabel.trim()}>Add State</Button>
+          </Stack>
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+            {states.filter(s => s.isCustom).map(s => (
+              <Chip
+                key={s.value}
+                label={s.label}
+                onDelete={() => deleteState(s.value)}
+                color="primary"
+                variant="outlined"
+              />
+            ))}
+            {states.filter(s => !s.isCustom).map(s => (
+              <Chip
+                key={s.value}
+                label={s.label}
+                color="default"
+                variant="outlined"
+                sx={{ opacity: 0.7 }}
+              />
+            ))}
+          </Stack>
+        </Paper>
+      </Collapse>
+
+      <Stack direction="row" spacing={2} mb={3} alignItems="center">
+        <FilterListRoundedIcon color="action" />
+        <FormControl size="small" sx={{ minWidth: 200 }}>
+          <InputLabel>Filter by Status</InputLabel>
+          <Select
+            value={filterState}
+            label="Filter by Status"
+            onChange={(e) => setFilterState(e.target.value)}
+          >
+            <MenuItem value="all"><em>All Tasks</em></MenuItem>
+            {states.map(s => (
+              <MenuItem key={s.value} value={s.value}>{s.label}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Stack>
+
+      {filteredTodos.length === 0 ? (
         <Paper variant="outlined" sx={{ p: 4, textAlign: "center" }}>
           <Typography variant="h6" gutterBottom>
-            No todos yet
+            No tasks found in "{states.find(s => s.value === filterState)?.label || filterState}"
           </Typography>
-          <Typography color="text.secondary" mb={2}>
-            Capture your first task to kickstart productivity.
-          </Typography>
-          <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={openAddTodoModal}>
+          <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={openAddTodoModal} sx={{ mt: 2 }}>
             Create Todo
           </Button>
         </Paper>
       ) : (
         <Stack spacing={2}>
-          {todos
-            .slice()
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-            .map((todo) => (
-              <Card key={todo.id} variant="outlined">
-                <CardContent>
-                  <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="space-between">
-                    <Stack direction="row" spacing={2} alignItems="flex-start" flexGrow={1}>
-                      <Checkbox
-                        checked={todo.completed}
-                        onChange={() => toggleTodo(todo.id)}
-                      />
+          {filteredTodos.map((todo) => (
+            <Card key={todo.id} variant="outlined">
+              <CardContent>
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="space-between">
+                  <Box flexGrow={1}>
+                    <Stack direction="row" spacing={2} alignItems="flex-start">
                       <Box flexGrow={1}>
                         <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
                           <Box>
-                            <Typography variant="h6" sx={{ textDecoration: todo.completed ? "line-through" : "none" }}>
+                            <Typography variant="h6" sx={{ textDecoration: todo.status === 'done' ? "line-through" : "none", color: todo.status === 'done' ? 'text.disabled' : 'text.primary' }}>
                               {todo.title}
                             </Typography>
                             {todo.note && (
@@ -205,125 +278,155 @@ export default function TodoContent() {
                                 {todo.note}
                               </Typography>
                             )}
-                            <Typography variant="caption" color="text.secondary" display="block" mb={1}>
-                              Created {formatDate(todo.createdAt)}
-                            </Typography>
+                            <Stack direction="row" spacing={2} alignItems="center" mt={1}>
+                              <Chip
+                                label={states.find(s => s.value === todo.status)?.label || todo.status}
+                                size="small"
+                                color={todo.status === 'done' ? 'success' : todo.status === 'progress' ? 'info' : 'default'}
+                                variant="outlined"
+                              />
+                              <Typography variant="caption" color="text.secondary">
+                                Created {formatDate(todo.createdAt)}
+                              </Typography>
+                            </Stack>
                           </Box>
+
+                          <Stack direction="column" spacing={1} alignItems="flex-end">
+                            <FormControl size="small" sx={{ minWidth: 140 }}>
+                              <Select
+                                value={todo.status}
+                                displayEmpty
+                                onChange={(e) => changeTodoStatus(todo.id, e.target.value)}
+                                variant="standard"
+                                disableUnderline
+                                sx={{ fontSize: '0.875rem' }}
+                              >
+                                {states.map(s => (
+                                  <MenuItem key={s.value} value={s.value}>{s.label}</MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                            <Stack direction="row" spacing={1}>
+                              {todo.status !== 'done' && (
+                                <IconButton color="success" onClick={() => changeTodoStatus(todo.id, 'done')} size="small" title="Mark as Done">
+                                  <CheckCircleOutlineRoundedIcon />
+                                </IconButton>
+                              )}
+                              <IconButton onClick={() => handleEditTodo(todo)} size="small">
+                                <EditRoundedIcon />
+                              </IconButton>
+                              <IconButton color="error" onClick={() => deleteTodo(todo.id)} size="small">
+                                <DeleteOutlineRoundedIcon />
+                              </IconButton>
+                            </Stack>
+                          </Stack>
+                        </Stack>
+                      </Box>
+                    </Stack>
+                    {/* Thumbnails */}
+                    {todo.documents.some(doc => doc.type.startsWith('image/')) && (
+                      <Stack direction="row" spacing={1} mt={2} flexWrap="wrap">
+                        {todo.documents.filter(doc => doc.type.startsWith('image/')).map(doc => (
+                          <Box
+                            key={doc.id}
+                            component="img"
+                            src={doc.url}
+                            alt={doc.name}
+                            sx={{
+                              width: 48,
+                              height: 48,
+                              borderRadius: 1,
+                              objectFit: "cover",
+                              border: "1px solid",
+                              borderColor: "divider"
+                            }}
+                          />
+                        ))}
+                      </Stack>
+                    )}
+                  </Box>
+                </Stack>
+
+                <Divider sx={{ my: 2 }} />
+
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }}>
+                  <Typography variant="subtitle2">Attachments</Typography>
+                  <Button
+                    startIcon={<AttachFileRoundedIcon />}
+                    onClick={() => openAttachmentPicker(todo.id)}
+                    variant="outlined"
+                    size="small"
+                  >
+                    Add Files
+                  </Button>
+                  {documents && attachmentTargetId === todo.id && (
+                    <Chip
+                      label={`${documents.length} file(s) ready`}
+                      color="primary"
+                      onDelete={() => {
+                        setDocuments(null);
+                        setAttachmentTargetId(null);
+                      }}
+                    />
+                  )}
+                  {documents && attachmentTargetId === todo.id && (
+                    <Button size="small" variant="contained" onClick={handleAddDocuments}>
+                      Attach
+                    </Button>
+                  )}
+                </Stack>
+
+                {todo.documents.length > 0 ? (
+                  <Stack spacing={1} mt={2}>
+                    {todo.documents.map((doc) => (
+                      <Paper key={doc.id} variant="outlined" sx={{ p: 2 }}>
+                        {doc.type.startsWith("image/") && (
+                          <Box mb={1}>
+                            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                              <Typography variant="body2" fontWeight={600} noWrap>
+                                {doc.name}
+                              </Typography>
+                              <IconButton size="small" onClick={() => toggleImageMinimize(doc.id)}>
+                                {minimizedImages[doc.id] ? <FullscreenRoundedIcon fontSize="small" /> : <FullscreenExitRoundedIcon fontSize="small" />}
+                              </IconButton>
+                            </Stack>
+                            {!minimizedImages[doc.id] && (
+                              <Box component="img" src={doc.url} alt={doc.name} sx={{ width: "100%", height: 160, objectFit: "cover", borderRadius: 1, border: "1px solid", borderColor: "divider" }} />
+                            )}
+                          </Box>
+                        )}
+                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <AttachFileRoundedIcon fontSize="small" />
+                            <Box>
+                              <Typography variant="body2" fontWeight={600} noWrap>
+                                {doc.name}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {doc.type || "Untyped"}
+                              </Typography>
+                            </Box>
+                          </Stack>
                           <Stack direction="row" spacing={1}>
-                            <IconButton onClick={() => handleEditTodo(todo)} size="small">
-                              <EditRoundedIcon />
+                            <IconButton component="a" href={doc.url} target="_blank" rel="noopener noreferrer">
+                              <VisibilityRoundedIcon fontSize="small" />
                             </IconButton>
-                            <IconButton color="error" onClick={() => deleteTodo(todo.id)} size="small">
-                              <DeleteOutlineRoundedIcon />
+                            <IconButton color="error" onClick={() => removeDocument(todo.id, doc.id)}>
+                              <DeleteOutlineRoundedIcon fontSize="small" />
                             </IconButton>
                           </Stack>
                         </Stack>
-
-                        {/* Thumbnails */}
-                        {todo.documents.some(doc => doc.type.startsWith('image/')) && (
-                          <Stack direction="row" spacing={1} mt={1} flexWrap="wrap">
-                            {todo.documents.filter(doc => doc.type.startsWith('image/')).map(doc => (
-                              <Box
-                                key={doc.id}
-                                component="img"
-                                src={doc.url}
-                                alt={doc.name}
-                                sx={{
-                                  width: 48,
-                                  height: 48,
-                                  borderRadius: 1,
-                                  objectFit: "cover",
-                                  border: "1px solid",
-                                  borderColor: "divider"
-                                }}
-                              />
-                            ))}
-                          </Stack>
-                        )}
-                      </Box>
-                    </Stack>
+                      </Paper>
+                    ))}
                   </Stack>
-
-                  <Divider sx={{ my: 2 }} />
-
-                  <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }}>
-                    <Typography variant="subtitle2">Attachments</Typography>
-                    <Button
-                      startIcon={<AttachFileRoundedIcon />}
-                      onClick={() => openAttachmentPicker(todo.id)}
-                      variant="outlined"
-                      size="small"
-                    >
-                      Add Files
-                    </Button>
-                    {documents && attachmentTargetId === todo.id && (
-                      <Chip
-                        label={`${documents.length} file(s) ready`}
-                        color="primary"
-                        onDelete={() => {
-                          setDocuments(null);
-                          setAttachmentTargetId(null);
-                        }}
-                      />
-                    )}
-                    {documents && attachmentTargetId === todo.id && (
-                      <Button size="small" variant="contained" onClick={handleAddDocuments}>
-                        Attach
-                      </Button>
-                    )}
-                  </Stack>
-
-                  {todo.documents.length > 0 ? (
-                    <Stack spacing={1} mt={2}>
-                      {todo.documents.map((doc) => (
-                        <Paper key={doc.id} variant="outlined" sx={{ p: 2 }}>
-                          {doc.type.startsWith("image/") && (
-                            <Box mb={1}>
-                              <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                <Typography variant="body2" fontWeight={600} noWrap>
-                                  {doc.name}
-                                </Typography>
-                                <IconButton size="small" onClick={() => toggleImageMinimize(doc.id)}>
-                                  {minimizedImages[doc.id] ? <FullscreenRoundedIcon fontSize="small" /> : <FullscreenExitRoundedIcon fontSize="small" />}
-                                </IconButton>
-                              </Stack>
-                              {!minimizedImages[doc.id] && (
-                                <Box component="img" src={doc.url} alt={doc.name} sx={{ width: "100%", height: 160, objectFit: "cover", borderRadius: 1, border: "1px solid", borderColor: "divider" }} />
-                              )}
-                            </Box>
-                          )}
-                          <Stack direction="row" justifyContent="space-between" alignItems="center">
-                            <Stack direction="row" spacing={1} alignItems="center">
-                              <AttachFileRoundedIcon fontSize="small" />
-                              <Box>
-                                <Typography variant="body2" fontWeight={600} noWrap>
-                                  {doc.name}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  {doc.type || "Untyped"}
-                                </Typography>
-                              </Box>
-                            </Stack>
-                            <Stack direction="row" spacing={1}>
-                              <IconButton component="a" href={doc.url} target="_blank" rel="noopener noreferrer">
-                                <VisibilityRoundedIcon fontSize="small" />
-                              </IconButton>
-                              <IconButton color="error" onClick={() => removeDocument(todo.id, doc.id)}>
-                                <DeleteOutlineRoundedIcon fontSize="small" />
-                              </IconButton>
-                            </Stack>
-                          </Stack>
-                        </Paper>
-                      ))}
-                    </Stack>
-                  ) : (
-                    <Typography mt={2} color="text.secondary" variant="body2">
-                      No documents attached.
-                    </Typography>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+                ) : (
+                  <Typography mt={2} color="text.secondary" variant="body2">
+                    No documents attached.
+                  </Typography>
+                )}
+              </CardContent>
+            </Card>
+          ))}
         </Stack>
       )}
 

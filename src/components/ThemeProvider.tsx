@@ -358,10 +358,64 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             <CssBaseline />
             <GlobalStyles
               styles={{
+                '@keyframes twinkle': {
+                  '0%': { opacity: 0.7 },
+                  '50%': { opacity: 1 },
+                  '100%': { opacity: 0.7 },
+                },
                 body: {
                   backgroundColor: currentTheme.background,
                   color: currentTheme.text,
+                  transition: 'background-color 0.3s ease, color 0.3s ease',
+                  ...(currentTheme.id === 'dark' ? {
+                    backgroundImage: `
+                      radial-gradient(1px 1px at 10% 10%, rgba(255,255,255,0.8) 1px, transparent 0),
+                      radial-gradient(1px 1px at 20% 40%, rgba(255,255,255,0.6) 1px, transparent 0),
+                      radial-gradient(1.5px 1.5px at 30% 70%, rgba(255,255,255,0.7) 1px, transparent 0),
+                      radial-gradient(1px 1px at 40% 20%, rgba(255,255,255,0.8) 1px, transparent 0),
+                      radial-gradient(1px 1px at 60% 60%, rgba(255,255,255,0.6) 1px, transparent 0),
+                      radial-gradient(1px 1px at 70% 30%, rgba(255,255,255,0.8) 1px, transparent 0),
+                      radial-gradient(1px 1px at 80% 80%, rgba(255,255,255,0.7) 1px, transparent 0),
+                      radial-gradient(1px 1px at 90% 10%, rgba(255,255,255,0.6) 1px, transparent 0),
+                      linear-gradient(to bottom, #111827, #0f172a)
+                    `,
+                    backgroundSize: '100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, cover',
+                    backgroundAttachment: 'fixed',
+                  } : {}),
+                  ...(currentTheme.id === 'default' ? {
+                    backgroundImage: `
+                      linear-gradient(120deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 100%),
+                      radial-gradient(circle at 100% 0%, rgba(253, 224, 71, 0.15) 0%, transparent 20%),
+                      radial-gradient(circle at 0% 100%, rgba(74, 222, 128, 0.1) 0%, transparent 20%),
+                      linear-gradient(to bottom, #f0f9ff, #d1fae5)
+                    `,
+                    backgroundAttachment: 'fixed',
+                  } : {}),
                 },
+                // Ensure text contrast for form labels and typography
+                '.MuiInputLabel-root': {
+                  color: currentTheme.text,
+                  opacity: 0.8,
+                },
+                '.MuiInputLabel-root.Mui-focused': {
+                  color: currentTheme.primary,
+                  opacity: 1,
+                },
+                '.MuiTypography-root': {
+                  color: currentTheme.text,
+                },
+                '.MuiTypography-colorTextSecondary': {
+                  color: currentTheme.text,
+                  opacity: 0.7
+                },
+                // Enhance card readability in themes
+                '.MuiCard-root, .MuiPaper-root': {
+                  backgroundColor: currentTheme.id === 'dark'
+                    ? 'rgba(30, 41, 59, 0.85)'
+                    : 'rgba(255, 255, 255, 0.85)',
+                  backdropFilter: 'blur(8px)',
+                  borderColor: currentTheme.id === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                }
               }}
             />
             {children}
