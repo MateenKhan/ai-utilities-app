@@ -2,56 +2,128 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { FiBookmark, FiCpu, FiCheckSquare, FiImage, FiSave, FiUpload } from "react-icons/fi";
+import {
+  Drawer,
+  Box,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Typography,
+} from "@mui/material";
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import BookmarkBorderRoundedIcon from "@mui/icons-material/BookmarkBorderRounded";
+import CalculateRoundedIcon from "@mui/icons-material/CalculateRounded";
+import ChecklistRoundedIcon from "@mui/icons-material/ChecklistRounded";
+import ImageRoundedIcon from "@mui/icons-material/ImageRounded";
+import SaveAltRoundedIcon from "@mui/icons-material/SaveAltRounded";
+import { useSidebar } from "@/contexts/SidebarContext";
+import { useTheme as useAppTheme } from "@/components/ThemeProvider";
+import { SIDEBAR_WIDTH, APP_BAR_HEIGHT } from "./layoutConstants";
 
-const Sidebar = () => {
+const NAV_ITEMS = [
+  { href: "/", label: "Home", icon: <HomeRoundedIcon fontSize="small" /> },
+  { href: "/bookmarks", label: "Bookmarks", icon: <BookmarkBorderRoundedIcon fontSize="small" /> },
+  { href: "/calculator", label: "Calculator", icon: <CalculateRoundedIcon fontSize="small" /> },
+  { href: "/todo", label: "Todo", icon: <ChecklistRoundedIcon fontSize="small" /> },
+  { href: "/image-tiles", label: "Image Tiles", icon: <ImageRoundedIcon fontSize="small" /> },
+  { href: "/save-load", label: "Save/Load", icon: <SaveAltRoundedIcon fontSize="small" /> },
+];
+
+export default function Sidebar() {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(true);
+  const { isOpen, closeSidebar } = useSidebar();
+  const { currentTheme } = useAppTheme();
 
-  const menuItems = [
-    { name: "Bookmarks", href: "/bookmarks", icon: FiBookmark },
-    { name: "Calculator", href: "/calculator", icon: FiCpu },
-    { name: "Todo List", href: "/todo", icon: FiCheckSquare },
-    { name: "Image Tiles", href: "/image-tiles", icon: FiImage },
-    { name: "Save/Load", href: "/save-load", icon: FiSave },
-  ];
+  const drawerContent = (
+    <Box
+      sx={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: currentTheme.sidebarBackground || "background.paper",
+      }}
+    >
+      <Box sx={{ px: 3, pt: 3, pb: 1 }}>
+        <Typography variant="subtitle1" fontWeight={600}>
+          Utilities App
+        </Typography>
+      </Box>
+      <Divider />
+      <List sx={{ flexGrow: 1 }}>
+        {NAV_ITEMS.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
+            <ListItemButton
+              selected={pathname === item.href}
+              onClick={closeSidebar}
+              sx={{
+                borderRadius: 2,
+                mx: 1.5,
+                my: 0.5,
+                "&.Mui-selected": {
+                  bgcolor: "primary.light",
+                  color: "primary.contrastText",
+                  "&:hover": { bgcolor: "primary.main" },
+                },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 36, color: "inherit" }}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText primary={item.label} />
+            </ListItemButton>
+          </Link>
+        ))}
+      </List>
+      <Divider />
+      <Box sx={{ p: 3 }}>
+        <Typography variant="caption" color="text.secondary">
+          Utilities App v1.0
+        </Typography>
+      </Box>
+    </Box>
+  );
 
   return (
     <>
-      {/* Sidebar */}
-      <div className={`bg-gray-800 text-white h-screen sticky top-0 z-10 transition-all duration-300 ${isOpen ? "w-64" : "w-20"}`}>
-        <div className="p-4 border-b border-gray-700 flex justify-between items-center">
-          {isOpen && <h1 className="text-xl font-bold">Utilities App</h1>}
-          <button 
-            onClick={() => setIsOpen(!isOpen)}
-            className="p-2 rounded hover:bg-gray-700"
-          >
-            {isOpen ? "«" : "»"}
-          </button>
-        </div>
-        <nav className="mt-4">
-          <ul>
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              return (
-                <li key={item.name}>
-                  <Link 
-                    href={item.href}
-                    className={`flex items-center p-4 hover:bg-gray-700 transition-colors ${isActive ? "bg-blue-600" : ""}`}
-                  >
-                    <Icon className="text-xl" />
-                    {isOpen && <span className="ml-4">{item.name}</span>}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-      </div>
+      <Drawer
+        variant="temporary"
+        open={isOpen}
+        onClose={closeSidebar}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: "block", md: "none" },
+          "& .MuiDrawer-paper": {
+            width: SIDEBAR_WIDTH,
+            boxSizing: "border-box",
+            bgcolor: currentTheme.sidebarBackground || "background.paper",
+          },
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+      <Drawer
+        variant="permanent"
+        open
+        sx={{
+          display: { xs: "none", md: "block" },
+          "& .MuiDrawer-paper": {
+            width: SIDEBAR_WIDTH,
+            top: APP_BAR_HEIGHT,
+            height: `calc(100% - ${APP_BAR_HEIGHT}px)`,
+            boxSizing: "border-box",
+            bgcolor: currentTheme.sidebarBackground || "background.paper",
+            borderRight: 0,
+          },
+        }}
+      >
+        {drawerContent}
+      </Drawer>
     </>
   );
-};
-
-export default Sidebar;
+}

@@ -70,7 +70,7 @@ export const useBookmarks = () => {
   }, [bookmarks, loading]);
 
   // Validate bookmark structure
-  const isValidBookmark = (bookmark: any): bookmark is Bookmark => {
+  const isValidBookmark = (bookmark: unknown): bookmark is Bookmark => {
     return (
       typeof bookmark === 'object' &&
       bookmark !== null &&

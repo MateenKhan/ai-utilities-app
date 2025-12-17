@@ -16,6 +16,34 @@ export type Todo = {
   createdAt: string; // Store as ISO string for serialization
 };
 
+const isValidDocument = (doc: unknown): doc is Document => {
+  return (
+    typeof doc === 'object' &&
+    doc !== null &&
+    typeof (doc as Document).id === 'string' &&
+    typeof (doc as Document).name === 'string' &&
+    typeof (doc as Document).type === 'string' &&
+    typeof (doc as Document).url === 'string'
+  );
+};
+
+const isValidTodo = (todo: unknown): todo is Todo => {
+  if (typeof todo !== 'object' || todo === null) {
+    return false;
+  }
+
+  const candidate = todo as Todo;
+  return (
+    typeof candidate.id === 'string' &&
+    typeof candidate.title === 'string' &&
+    typeof candidate.note === 'string' &&
+    typeof candidate.completed === 'boolean' &&
+    typeof candidate.createdAt === 'string' &&
+    Array.isArray(candidate.documents) &&
+    candidate.documents.every(isValidDocument)
+  );
+};
+
 export const useTodos = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,33 +106,6 @@ export const useTodos = () => {
       }
     }
   }, [todos, loading]);
-
-  // Validate todo structure
-  const isValidTodo = (todo: any): todo is Todo => {
-    return (
-      typeof todo === 'object' &&
-      todo !== null &&
-      typeof todo.id === 'string' &&
-      typeof todo.title === 'string' &&
-      typeof todo.note === 'string' &&
-      typeof todo.completed === 'boolean' &&
-      typeof todo.createdAt === 'string' &&
-      Array.isArray(todo.documents) &&
-      todo.documents.every(isValidDocument)
-    );
-  };
-
-  // Validate document structure
-  const isValidDocument = (doc: any): doc is Document => {
-    return (
-      typeof doc === 'object' &&
-      doc !== null &&
-      typeof doc.id === 'string' &&
-      typeof doc.name === 'string' &&
-      typeof doc.type === 'string' &&
-      typeof doc.url === 'string'
-    );
-  };
 
   // Add a new todo
   const addTodo = (todo: Omit<Todo, 'id' | 'createdAt' | 'documents'>) => {

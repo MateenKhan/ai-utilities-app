@@ -1,60 +1,201 @@
 # Utilities App
 
-A collection of useful tools built with Next.js 14, including a bookmarks manager, calculator with unit conversion, todo list with document attachments, image tile generator, and save/load functionality.
+A comprehensive collection of useful tools built with Next.js, TypeScript, and Tailwind CSS.
 
 ## Features
 
-1. **Bookmarks Manager**
-   - Create, read, update, and delete bookmarks
-   - Each bookmark has a name and URL
-   - Displayed as cards for easy visualization
+### 📚 Bookmarks Manager
+- Create, read, update, and delete bookmarks
+- Organize bookmarks with tags
+- Search functionality
+- Responsive card-based layout
 
-2. **Calculator with Unit Conversion**
-   - Standard calculator functionality (+, -, ×, ÷)
-   - Unit conversion for length, weight, and temperature
-   - Supports various units (mm, cm, m, km, inch, feet, yard, mile for length; mg, g, kg, oz, lb for weight; Celsius, Fahrenheit, Kelvin for temperature)
+### 🧮 Advanced Calculator
+- Scientific calculator with basic operations
+- Unit conversion (Length, Weight, Temperature)
+- Calculation history with timestamp
+- Keyboard support
+- Toggleable views (Calculator Only, Converter Only, Both)
+- Resizable panels
 
-3. **Todo List**
-   - Create, read, update, and delete todos
-   - Add detailed notes to each todo
-   - Upload and attach documents to todos
-   - Preview attached documents
+### ✅ Todo List
+- Create, update, and delete tasks
+- Mark tasks as complete/incomplete
+- Add notes to tasks
+- Upload and preview documents
+- Local storage persistence
 
-4. **Save/Load Data**
-   - Save all application data to a ZIP file
-   - Load data from a previously saved ZIP file
-   - Includes bookmarks, todos, and attached documents
+### 🖼️ Image Tiles Generator
+- Convert images into printable A4 tiles
+- Custom tile dimensions
+- Download individual tiles or all tiles at once
+- Preview generated tiles
 
-5. **Image Tile Generator**
-   - Convert any image into multiple A4-sized tiles
-   - Specify base image dimensions in mm or inches
-   - Download individual tiles or all tiles at once
+### 🎨 Theme Customization
+- **Preset Themes**: Choose from Default and Dark themes
+- **Custom Themes**: Create your own themes with:
+  - 60-30-10 color rule implementation (Primary 60%, Secondary 30%, Accent 10%)
+  - Custom font families and styling
+  - Adjustable border radius and box shadows
+  - Custom color palette
+- **Font Management**: 
+  - Add custom fonts from Google Fonts or other sources
+  - Manage multiple font libraries
+  - Export themes with embedded fonts
+- **Export/Import**:
+  - Export themes as JSON files
+  - Export themes with embedded font files in ZIP format
+  - Import themes from JSON files
+  - Share themes between devices
+
+### 💾 Save & Load Data
+- Export all app data (bookmarks, todos, calculator history, image tiles) to ZIP
+- Import data from ZIP files
+- Export themes with custom fonts
+- Complete data migration between devices
 
 ## Getting Started
 
-First, install the dependencies:
+### Prerequisites
+- Node.js (version 18 or higher)
+- npm or yarn
 
-```bash
-npm install
-```
+### Installation
 
-Then, run the development server:
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   ```
 
+2. Navigate to the project directory:
+   ```bash
+   cd utilities-app
+   ```
+
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+### Running the Application
+
+#### Development Mode
 ```bash
 npm run dev
 ```
+The application will be available at http://localhost:3000
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+#### Production Build
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+### Exporting for Static Hosting
+```bash
+npm run export
+```
+This creates a static export in the `docs` folder for easy deployment to GitHub Pages or similar services.
 
-To learn more about Next.js, take a look at the following resources:
+## Technologies Used
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Next.js 14** with App Router
+- **TypeScript** for type safety
+- **Tailwind CSS** for styling
+- **React Icons** for icons
+- **JSZip** for ZIP file handling
+- **FileSaver.js** for file downloads
 
-## Deploy on Vercel
+## Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/
+├── app/                 # Next.js app router pages
+│   ├── bookmarks/       # Bookmarks manager
+│   ├── calculator/      # Calculator and unit converter
+│   ├── image-tiles/     # Image tile generator
+│   ├── save-load/       # Data export/import
+│   ├── todo/            # Todo list
+│   ├── layout.tsx       # Root layout with theme provider
+│   └── page.tsx         # Home page
+├── components/          # Reusable components
+│   ├── Sidebar.tsx      # Navigation sidebar
+│   ├── ThemeProvider.tsx # Theme management context
+│   └── ThemeSelector.tsx # Theme selection UI
+├── hooks/               # Custom React hooks
+│   ├── useBookmarks.ts  # Bookmarks state management
+│   └── useTodos.ts      # Todo state management
+└── utils/               # Utility functions
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Theme Customization Guide
+
+### Using Preset Themes
+1. Click the "Theme" button in the top right corner
+2. Select from available preset themes (Default, Dark)
+
+### Creating Custom Themes
+1. Click the "Theme" button in the top right corner
+2. Select "Customize Theme"
+3. Adjust colors following the 60-30-10 rule:
+   - Primary Color (60% dominance)
+   - Secondary Color (30% support)
+   - Accent Color (10% highlight)
+4. Customize typography (font family, size, weight)
+5. Adjust styling (border radius, box shadow)
+6. Add custom fonts by URL
+7. Click "Save Theme"
+
+### Managing Custom Fonts
+1. In the theme customizer, click "Manage" next to Custom Fonts
+2. Enter the URL for a font stylesheet (e.g., Google Fonts CDN)
+3. Click "Add" to include the font in your theme
+4. Use the font family name in the Font Family field
+
+### Exporting Themes
+1. Click the "Theme" button in the top right corner
+2. Choose "Export Themes" to save theme definitions
+3. Choose "Export with Fonts" to save themes with embedded font files
+
+### Importing Themes
+1. Click the "Theme" button in the top right corner
+2. Select "Import Themes"
+3. Choose a previously exported theme JSON file
+
+## Data Management
+
+### Exporting All Data
+1. Navigate to the "Save/Load" page
+2. Click "Export All Data"
+3. Save the generated ZIP file
+
+### Importing Data
+1. Navigate to the "Save/Load" page
+2. Click "Choose File" and select a previously exported ZIP file
+3. The application will reload with imported data
+
+## Keyboard Shortcuts
+
+### Calculator
+- `0-9`: Input digits
+- `+`, `-`, `*`, `/`: Operators
+- `Enter` or `=`: Equals
+- `Escape`: Clear (AC)
+- `.`: Decimal point
+- `%`: Percentage
+- `H`: Toggle history
+- `1`: Calculator only view
+- `2`: Converter only view
+- `3`: Both views
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a pull request
+
+## License
+
+This project is licensed under the MIT License.
