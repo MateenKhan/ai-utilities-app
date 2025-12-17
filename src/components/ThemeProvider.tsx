@@ -38,6 +38,8 @@ interface ThemeContextType {
   exportThemes: () => Promise<void>;
   importThemes: (data: string) => void;
   exportWithFonts: () => Promise<void>;
+  animationsEnabled: boolean;
+  setAnimationsEnabled: (enabled: boolean) => void;
 }
 
 const defaultTheme: Theme = {
@@ -340,6 +342,19 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     // This function is kept for backward compatibility but the save-load page handles complete export
   };
 
+  const [animationsEnabled, setAnimationsEnabled] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("animationsEnabled");
+      return saved !== null ? JSON.parse(saved) : true;
+    }
+    return true;
+  });
+
+  // Save animationsEnabled to localStorage
+  useEffect(() => {
+    localStorage.setItem('animationsEnabled', JSON.stringify(animationsEnabled));
+  }, [animationsEnabled]);
+
   return (
     <ThemeContext.Provider value={{
       currentTheme,
@@ -350,7 +365,9 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       deleteTheme,
       exportThemes,
       importThemes,
-      exportWithFonts
+      exportWithFonts,
+      animationsEnabled,
+      setAnimationsEnabled
     }}>
       <NotificationProvider>
         <SidebarProvider>
@@ -373,7 +390,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                   '100%': { backgroundPosition: '0% 0%' },
                 },
                 body: {
-                  backgroundColor: 'transparent !important', // Ensure body is transparent
+                  backgroundColor: 'transparent !important',
                   color: currentTheme.text,
                   transition: 'color 0.3s ease',
                   minHeight: '100vh',
@@ -388,8 +405,6 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                     zIndex: -1,
                     transition: 'background-image 0.5s ease',
                     pointerEvents: 'none',
-                    // Apply base background color here if not theme specific, 
-                    // or rely on the gradients including the base color.
                     backgroundColor: currentTheme.background,
                     ...(currentTheme.id === 'dark' ? {
                       backgroundImage: `
@@ -405,7 +420,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                         `,
                       backgroundSize: '550px 550px, 350px 350px, 250px 250px, 150px 150px, 450px 450px, 300px 300px, 200px 200px, 100px 100px, cover',
                       backgroundAttachment: 'fixed, fixed, fixed, fixed, fixed, fixed, fixed, fixed, fixed',
-                      animation: 'moveStars 60s linear infinite',
+                      animation: animationsEnabled ? 'moveStars 60s linear infinite' : 'none',
                     } : {}),
                     ...(currentTheme.id === 'default' ? {
                       backgroundImage: `
@@ -416,7 +431,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                           linear-gradient(to bottom right, #f0f9ff 0%, #dcfce7 100%)
                         `,
                       backgroundSize: '120% 120%, 100% 100%, 100% 100%, 80% 80%, cover',
-                      animation: 'moveLeaves 30s ease-in-out infinite alternate',
+                      animation: animationsEnabled ? 'moveLeaves 30s ease-in-out infinite alternate' : 'none',
                     } : {}),
                   },
                 },
