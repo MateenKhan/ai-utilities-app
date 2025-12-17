@@ -1,6 +1,9 @@
-"use client";
+import dynamic from "next/dynamic";
+import Loading from "@/components/Loading";
 
-import TodoContent from "@/components/utilities/TodoContent";
+const TodoContent = dynamic(() => import("@/components/utilities/TodoContent"), {
+  loading: () => <Loading />,
+});
 
 export default function TodoPage() {
   return <TodoContent />;

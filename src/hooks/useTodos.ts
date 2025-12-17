@@ -108,12 +108,12 @@ export const useTodos = () => {
   }, [todos, loading]);
 
   // Add a new todo
-  const addTodo = (todo: Omit<Todo, 'id' | 'createdAt' | 'documents'>) => {
+  const addTodo = (todo: Omit<Todo, 'id' | 'createdAt' | 'documents'> & { documents?: Document[] }) => {
     const newTodo: Todo = {
       ...todo,
       id: Date.now().toString(),
       createdAt: new Date().toISOString(),
-      documents: [],
+      documents: todo.documents || [],
     };
     setTodos(prev => [...prev, newTodo]);
   };
@@ -147,7 +147,7 @@ export const useTodos = () => {
       ...document,
       id: `${Date.now()}`,
     };
-    
+
     setTodos(prev =>
       prev.map(todo =>
         todo.id === todoId

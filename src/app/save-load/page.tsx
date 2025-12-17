@@ -1,6 +1,9 @@
-"use client";
+import dynamic from "next/dynamic";
+import Loading from "@/components/Loading";
 
-import SaveLoadContent from "@/components/utilities/SaveLoadContent";
+const SaveLoadContent = dynamic(() => import("@/components/utilities/SaveLoadContent"), {
+  loading: () => <Loading />,
+});
 
 export default function SaveLoadPage() {
   return <SaveLoadContent />;

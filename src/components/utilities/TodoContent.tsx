@@ -50,7 +50,20 @@ export default function TodoContent() {
   const handleAddTodo = () => {
     if (!title.trim()) return;
 
-    addTodo({ title, note, completed: false });
+    const newDocs = [];
+    if (documents && attachmentTargetId === "new") {
+      for (let i = 0; i < documents.length; i++) {
+        const file = documents[i];
+        newDocs.push({
+          id: `${Date.now()}-${i}`,
+          name: file.name,
+          type: file.type,
+          url: URL.createObjectURL(file),
+        });
+      }
+    }
+
+    addTodo({ title, note, completed: false, documents: newDocs });
     closeModal();
   };
 
@@ -71,6 +84,8 @@ export default function TodoContent() {
   const resetForm = () => {
     setTitle("");
     setNote("");
+    setDocuments(null);
+    setAttachmentTargetId(null);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -313,6 +328,36 @@ export default function TodoContent() {
               multiline
               minRows={3}
             />
+            {!editingId && (
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>
+                  Attachments
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<AttachFileRoundedIcon />}
+                  onClick={() => {
+                    setAttachmentTargetId("new");
+                    fileInputRef.current?.click();
+                  }}
+                >
+                  Choose Files
+                </Button>
+                {documents && attachmentTargetId === "new" && (
+                  <Chip
+                    sx={{ ml: 2 }}
+                    label={`${documents.length} file(s) selected`}
+                    onDelete={() => {
+                      setDocuments(null);
+                      setAttachmentTargetId(null);
+                    }}
+                    color="primary"
+                    variant="outlined"
+                  />
+                )}
+              </Box>
+            )}
           </Stack>
         </DialogContent>
         <DialogActions>

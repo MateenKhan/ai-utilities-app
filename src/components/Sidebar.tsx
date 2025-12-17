@@ -23,12 +23,12 @@ import { useTheme as useAppTheme } from "@/components/ThemeProvider";
 import { SIDEBAR_WIDTH, MINI_SIDEBAR_WIDTH, APP_BAR_HEIGHT } from "./layoutConstants";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Home", icon: <HomeRoundedIcon fontSize="small" /> },
-  { href: "/bookmarks", label: "Bookmarks", icon: <BookmarkBorderRoundedIcon fontSize="small" /> },
-  { href: "/calculator", label: "Calculator", icon: <CalculateRoundedIcon fontSize="small" /> },
-  { href: "/todo", label: "Todo", icon: <ChecklistRoundedIcon fontSize="small" /> },
-  { href: "/image-tiles", label: "Image Tiles", icon: <ImageRoundedIcon fontSize="small" /> },
-  { href: "/save-load", label: "Save/Load", icon: <SaveAltRoundedIcon fontSize="small" /> },
+  { href: "/todo", label: "Todo List", icon: <ChecklistRoundedIcon fontSize="small" sx={{ color: "#4caf50" }} /> },
+  { href: "/", label: "Home", icon: <HomeRoundedIcon fontSize="small" sx={{ color: "#2196f3" }} /> },
+  { href: "/bookmarks", label: "Bookmarks", icon: <BookmarkBorderRoundedIcon fontSize="small" sx={{ color: "#9c27b0" }} /> },
+  { href: "/calculator", label: "Calculator", icon: <CalculateRoundedIcon fontSize="small" sx={{ color: "#ff9800" }} /> },
+  { href: "/image-tiles", label: "Image Tiles", icon: <ImageRoundedIcon fontSize="small" sx={{ color: "#f44336" }} /> },
+  { href: "/save-load", label: "Save/Load", icon: <SaveAltRoundedIcon fontSize="small" sx={{ color: "#607d8b" }} /> },
 ];
 
 export default function Sidebar() {
@@ -36,7 +36,7 @@ export default function Sidebar() {
   const { isOpen, closeSidebar, isCollapsed } = useSidebar();
   const { currentTheme } = useAppTheme();
 
-  const drawerContent = (
+  const getDrawerContent = (isMobile: boolean) => (
     <Box
       sx={{
         height: "100%",
@@ -45,11 +45,11 @@ export default function Sidebar() {
         bgcolor: currentTheme.sidebarBackground || "background.paper",
       }}
     >
-      <Box sx={{ px: isCollapsed ? 1 : 3, pt: 3, pb: 1, display: 'flex', justifyContent: isCollapsed ? 'center' : 'flex-start' }}>
-        <Typography variant="subtitle1" fontWeight={600} noWrap sx={{ display: isCollapsed ? 'none' : 'block' }}>
-          Utilities App
+      <Box sx={{ px: (isCollapsed && !isMobile) ? 1 : 3, pt: 3, pb: 1, display: 'flex', justifyContent: (isCollapsed && !isMobile) ? 'center' : 'flex-start' }}>
+        <Typography variant="subtitle1" fontWeight={600} noWrap sx={{ display: (isCollapsed && !isMobile) ? 'none' : 'block' }}>
+          Airtajal Utilities
         </Typography>
-        {isCollapsed && <Typography variant="caption" fontWeight={700}>UA</Typography>}
+        {(isCollapsed && !isMobile) && <Typography variant="caption" fontWeight={700}>AU</Typography>}
       </Box>
       <Divider />
       <List sx={{ flexGrow: 1 }}>
@@ -64,25 +64,35 @@ export default function Sidebar() {
               onClick={closeSidebar}
               sx={{
                 borderRadius: 2,
-                mx: isCollapsed ? 1 : 1.5,
+                mx: (isCollapsed && !isMobile) ? 1 : 1.5,
                 my: 0.5,
-                justifyContent: isCollapsed ? 'center' : 'flex-start',
-                px: isCollapsed ? 1 : 2,
+                justifyContent: (isCollapsed && !isMobile) ? 'center' : 'flex-start',
+                px: (isCollapsed && !isMobile) ? 1 : 2,
+                border: "2px solid transparent",
                 "&.Mui-selected": {
-                  bgcolor: "primary.light",
-                  color: "primary.contrastText",
-                  "&:hover": { bgcolor: "primary.main" },
+                  bgcolor: "transparent",
+                  borderColor: "primary.main",
+                  color: "text.primary",
+                  "& .MuiSvgIcon-root": {
+                    transform: "scale(1.3)",
+                    transition: "transform 0.2s",
+                    filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.2))"
+                  },
+                  "&:hover": {
+                    bgcolor: "action.hover",
+                    borderColor: "primary.dark",
+                  },
                 },
               }}
             >
-              <ListItemIcon sx={{ minWidth: isCollapsed ? 0 : 36, color: "inherit", mr: isCollapsed ? 0 : undefined, justifyContent: 'center' }}>
+              <ListItemIcon sx={{ minWidth: (isCollapsed && !isMobile) ? 0 : 36, mr: (isCollapsed && !isMobile) ? 0 : undefined, justifyContent: 'center' }}>
                 {item.icon}
               </ListItemIcon>
               <ListItemText
                 primary={item.label}
                 sx={{
-                  opacity: isCollapsed ? 0 : 1,
-                  display: isCollapsed ? 'none' : 'block',
+                  opacity: (isCollapsed && !isMobile) ? 0 : 1,
+                  display: (isCollapsed && !isMobile) ? 'none' : 'block',
                   transition: 'opacity 0.2s',
                   whiteSpace: 'nowrap'
                 }}
@@ -92,9 +102,9 @@ export default function Sidebar() {
         ))}
       </List>
       <Divider />
-      <Box sx={{ p: 3, display: isCollapsed ? 'none' : 'block' }}>
+      <Box sx={{ p: 3, display: (isCollapsed && !isMobile) ? 'none' : 'block' }}>
         <Typography variant="caption" color="text.secondary">
-          Utilities App v1.0
+          Airtajal Utilities v1.0
         </Typography>
       </Box>
     </Box>
@@ -116,7 +126,7 @@ export default function Sidebar() {
           },
         }}
       >
-        {drawerContent}
+        {getDrawerContent(true)}
       </Drawer>
       <Drawer
         variant="permanent"
@@ -135,7 +145,7 @@ export default function Sidebar() {
           },
         }}
       >
-        {drawerContent}
+        {getDrawerContent(false)}
       </Drawer>
     </>
   );

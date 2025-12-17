@@ -2,6 +2,7 @@
 
 import { AppBar, Toolbar, IconButton, Typography, Stack } from "@mui/material";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
+import BuildRoundedIcon from "@mui/icons-material/BuildRounded";
 import ThemeSelector from "@/components/ThemeSelector";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { APP_BAR_HEIGHT } from "./layoutConstants";
@@ -38,9 +39,12 @@ export default function Header() {
         >
           <MenuRoundedIcon />
         </IconButton>
-        <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
-          Utilities App
-        </Typography>
+        <Stack direction="row" alignItems="center" spacing={1} flexGrow={1}>
+          <BuildRoundedIcon sx={{ color: "#ff4081" }} />
+          <Typography variant="h6" noWrap>
+            Airtajal Utilities
+          </Typography>
+        </Stack>
         <Stack direction="row" spacing={1} alignItems="center">
           <ThemeSelector />
         </Stack>

@@ -18,9 +18,9 @@ import ImageRoundedIcon from "@mui/icons-material/ImageRounded";
 import SaveAltRoundedIcon from "@mui/icons-material/SaveAltRounded";
 
 const utilities = [
+  { id: "todo", label: "Todo List", icon: <ChecklistRoundedIcon />, color: "success.main" },
   { id: "bookmarks", label: "Bookmarks", icon: <BookmarkBorderRoundedIcon />, color: "primary.main" },
   { id: "calculator", label: "Calculator", icon: <CalculateRoundedIcon />, color: "secondary.main" },
-  { id: "todo", label: "Todo List", icon: <ChecklistRoundedIcon />, color: "success.main" },
   { id: "image-tiles", label: "Image Tiles", icon: <ImageRoundedIcon />, color: "warning.main" },
   { id: "save-load", label: "Save/Load", icon: <SaveAltRoundedIcon />, color: "info.main" },
 ];
@@ -30,7 +30,7 @@ export default function HomePage() {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box textAlign="center" mb={4}>
         <Typography variant="h4" fontWeight={700} gutterBottom>
-          Utilities App
+          Airtajal Utilities
         </Typography>
         <Typography color="text.secondary">
           Choose a tool to get started

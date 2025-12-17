@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Utilities App",
+  title: "Airtajal Utilities",
   description: "A collection of useful utilities",
 };
 

@@ -1,6 +1,9 @@
-"use client";
+import dynamic from "next/dynamic";
+import Loading from "@/components/Loading";
 
-import BookmarksContent from "@/components/utilities/BookmarksContent";
+const BookmarksContent = dynamic(() => import("@/components/utilities/BookmarksContent"), {
+  loading: () => <Loading />,
+});
 
 export default function BookmarksPage() {
   return <BookmarksContent />;
