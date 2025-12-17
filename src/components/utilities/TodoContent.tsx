@@ -189,33 +189,59 @@ export default function TodoContent() {
               <Card key={todo.id} variant="outlined">
                 <CardContent>
                   <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="space-between">
-                    <Stack direction="row" spacing={2} alignItems="flex-start">
+                    <Stack direction="row" spacing={2} alignItems="flex-start" flexGrow={1}>
                       <Checkbox
                         checked={todo.completed}
                         onChange={() => toggleTodo(todo.id)}
                       />
-                      <Box>
-                        <Typography variant="h6" sx={{ textDecoration: todo.completed ? "line-through" : "none" }}>
-                          {todo.title}
-                        </Typography>
-                        {todo.note && (
-                          <Typography color="text.secondary" mb={1}>
-                            {todo.note}
-                          </Typography>
+                      <Box flexGrow={1}>
+                        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                          <Box>
+                            <Typography variant="h6" sx={{ textDecoration: todo.completed ? "line-through" : "none" }}>
+                              {todo.title}
+                            </Typography>
+                            {todo.note && (
+                              <Typography color="text.secondary" mb={1}>
+                                {todo.note}
+                              </Typography>
+                            )}
+                            <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+                              Created {formatDate(todo.createdAt)}
+                            </Typography>
+                          </Box>
+                          <Stack direction="row" spacing={1}>
+                            <IconButton onClick={() => handleEditTodo(todo)} size="small">
+                              <EditRoundedIcon />
+                            </IconButton>
+                            <IconButton color="error" onClick={() => deleteTodo(todo.id)} size="small">
+                              <DeleteOutlineRoundedIcon />
+                            </IconButton>
+                          </Stack>
+                        </Stack>
+
+                        {/* Thumbnails */}
+                        {todo.documents.some(doc => doc.type.startsWith('image/')) && (
+                          <Stack direction="row" spacing={1} mt={1} flexWrap="wrap">
+                            {todo.documents.filter(doc => doc.type.startsWith('image/')).map(doc => (
+                              <Box
+                                key={doc.id}
+                                component="img"
+                                src={doc.url}
+                                alt={doc.name}
+                                sx={{
+                                  width: 48,
+                                  height: 48,
+                                  borderRadius: 1,
+                                  objectFit: "cover",
+                                  border: "1px solid",
+                                  borderColor: "divider"
+                                }}
+                              />
+                            ))}
+                          </Stack>
                         )}
-                        <Typography variant="caption" color="text.secondary">
-                          Created {formatDate(todo.createdAt)}
-                        </Typography>
                       </Box>
                     </Stack>
-                    <CardActions sx={{ alignSelf: { xs: "flex-start", sm: "center" } }}>
-                      <Button startIcon={<EditRoundedIcon />} onClick={() => handleEditTodo(todo)}>
-                        Edit
-                      </Button>
-                      <IconButton color="error" onClick={() => deleteTodo(todo.id)}>
-                        <DeleteOutlineRoundedIcon />
-                      </IconButton>
-                    </CardActions>
                   </Stack>
 
                   <Divider sx={{ my: 2 }} />

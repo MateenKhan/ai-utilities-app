@@ -22,6 +22,8 @@ import {
 } from "@mui/material";
 import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
+import CalculateRoundedIcon from "@mui/icons-material/CalculateRounded";
+import CompareArrowsRoundedIcon from "@mui/icons-material/CompareArrowsRounded";
 
 
 type CalculationHistory = {
@@ -338,17 +340,19 @@ export default function CalculatorContent() {
     <Box>
 
 
-      <Typography variant="h5" fontWeight={700} gutterBottom>
-        Calculator & Unit Converter
-      </Typography>
-      <Typography color="text.secondary" mb={3}>
-        Perform quick calculations, keep a running history, and convert units without leaving the page.
-      </Typography>
-
       <ToggleButtonGroup value={activeView} exclusive onChange={(_e, value) => value && setActiveView(value)} sx={{ mb: 3 }}>
-        <ToggleButton value="calculator">Calculator</ToggleButton>
-        <ToggleButton value="converter">Converter</ToggleButton>
-        <ToggleButton value="both">Both</ToggleButton>
+        <ToggleButton value="calculator" aria-label="calculator">
+          <CalculateRoundedIcon />
+        </ToggleButton>
+        <ToggleButton value="converter" aria-label="converter">
+          <CompareArrowsRoundedIcon />
+        </ToggleButton>
+        <ToggleButton value="both" aria-label="both">
+          <Box display="flex">
+            <CalculateRoundedIcon sx={{ mr: 1 }} />
+            <CompareArrowsRoundedIcon />
+          </Box>
+        </ToggleButton>
       </ToggleButtonGroup>
 
       <Stack direction={{ xs: "column", md: "row" }} spacing={3}>
@@ -438,9 +442,6 @@ export default function CalculatorContent() {
         {showConverter && (
           <Card sx={{ flex: showCalculator ? 1 : undefined }}>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Unit Converter
-              </Typography>
               <ToggleButtonGroup value={conversionMode} exclusive onChange={(_e, value) => setConversionMode(value)} fullWidth sx={{ mb: 2 }}>
                 <ToggleButton value="length">Length</ToggleButton>
                 <ToggleButton value="weight">Weight</ToggleButton>
