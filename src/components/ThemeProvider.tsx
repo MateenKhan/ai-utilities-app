@@ -363,34 +363,62 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                   '50%': { opacity: 1 },
                   '100%': { opacity: 0.7 },
                 },
+                '@keyframes moveStars': {
+                  'from': { backgroundPosition: '0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0' },
+                  'to': { backgroundPosition: '0 1000px, 0 500px, 0 400px, 0 300px, 0 200px, 0 100px, 0 50px, 0 150px, 0 0' }
+                },
+                '@keyframes moveLeaves': {
+                  '0%': { backgroundPosition: '0% 0%' },
+                  '50%': { backgroundPosition: '100% 100%' },
+                  '100%': { backgroundPosition: '0% 0%' },
+                },
                 body: {
-                  backgroundColor: currentTheme.background,
+                  backgroundColor: 'transparent !important', // Ensure body is transparent
                   color: currentTheme.text,
-                  transition: 'background-color 0.3s ease, color 0.3s ease',
-                  ...(currentTheme.id === 'dark' ? {
-                    backgroundImage: `
-                      radial-gradient(1px 1px at 10% 10%, rgba(255,255,255,0.8) 1px, transparent 0),
-                      radial-gradient(1px 1px at 20% 40%, rgba(255,255,255,0.6) 1px, transparent 0),
-                      radial-gradient(1.5px 1.5px at 30% 70%, rgba(255,255,255,0.7) 1px, transparent 0),
-                      radial-gradient(1px 1px at 40% 20%, rgba(255,255,255,0.8) 1px, transparent 0),
-                      radial-gradient(1px 1px at 60% 60%, rgba(255,255,255,0.6) 1px, transparent 0),
-                      radial-gradient(1px 1px at 70% 30%, rgba(255,255,255,0.8) 1px, transparent 0),
-                      radial-gradient(1px 1px at 80% 80%, rgba(255,255,255,0.7) 1px, transparent 0),
-                      radial-gradient(1px 1px at 90% 10%, rgba(255,255,255,0.6) 1px, transparent 0),
-                      linear-gradient(to bottom, #111827, #0f172a)
-                    `,
-                    backgroundSize: '100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, cover',
-                    backgroundAttachment: 'fixed',
-                  } : {}),
-                  ...(currentTheme.id === 'default' ? {
-                    backgroundImage: `
-                      linear-gradient(120deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 100%),
-                      radial-gradient(circle at 100% 0%, rgba(253, 224, 71, 0.15) 0%, transparent 20%),
-                      radial-gradient(circle at 0% 100%, rgba(74, 222, 128, 0.1) 0%, transparent 20%),
-                      linear-gradient(to bottom, #f0f9ff, #d1fae5)
-                    `,
-                    backgroundAttachment: 'fixed',
-                  } : {}),
+                  transition: 'color 0.3s ease',
+                  minHeight: '100vh',
+                  position: 'relative',
+                  '&::before': {
+                    content: '""',
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    zIndex: -1,
+                    transition: 'background-image 0.5s ease',
+                    pointerEvents: 'none',
+                    // Apply base background color here if not theme specific, 
+                    // or rely on the gradients including the base color.
+                    backgroundColor: currentTheme.background,
+                    ...(currentTheme.id === 'dark' ? {
+                      backgroundImage: `
+                          radial-gradient(2px 2px at 10% 10%, rgba(255,255,255,0.9) 1px, transparent 0),
+                          radial-gradient(2px 2px at 20% 40%, rgba(255,255,255,0.7) 1px, transparent 0),
+                          radial-gradient(2px 2px at 30% 70%, rgba(255,255,255,0.8) 1px, transparent 0),
+                          radial-gradient(1.5px 1.5px at 40% 20%, rgba(255,255,255,0.9) 1px, transparent 0),
+                          radial-gradient(2px 2px at 60% 60%, rgba(255,255,255,0.7) 1px, transparent 0),
+                          radial-gradient(2px 2px at 70% 30%, rgba(255,255,255,0.9) 1px, transparent 0),
+                          radial-gradient(1.5px 1.5px at 80% 80%, rgba(255,255,255,0.8) 1px, transparent 0),
+                          radial-gradient(2px 2px at 90% 10%, rgba(255,255,255,0.7) 1px, transparent 0),
+                          linear-gradient(to bottom, #0f172a 0%, #1e293b 100%)
+                        `,
+                      backgroundSize: '550px 550px, 350px 350px, 250px 250px, 150px 150px, 450px 450px, 300px 300px, 200px 200px, 100px 100px, cover',
+                      backgroundAttachment: 'fixed, fixed, fixed, fixed, fixed, fixed, fixed, fixed, fixed',
+                      animation: 'moveStars 60s linear infinite',
+                    } : {}),
+                    ...(currentTheme.id === 'default' ? {
+                      backgroundImage: `
+                          radial-gradient(circle at 50% -20%, rgba(253, 224, 71, 0.4) 0%, transparent 40%),
+                          radial-gradient(circle at 100% 0%, rgba(74, 222, 128, 0.2) 0%, transparent 30%),
+                          radial-gradient(circle at 0% 100%, rgba(34, 197, 94, 0.15) 0%, transparent 40%),
+                          radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.4) 0%, transparent 20%),
+                          linear-gradient(to bottom right, #f0f9ff 0%, #dcfce7 100%)
+                        `,
+                      backgroundSize: '120% 120%, 100% 100%, 100% 100%, 80% 80%, cover',
+                      animation: 'moveLeaves 30s ease-in-out infinite alternate',
+                    } : {}),
+                  },
                 },
                 // Ensure text contrast for form labels and typography
                 '.MuiInputLabel-root': {
@@ -411,9 +439,9 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 // Enhance card readability in themes
                 '.MuiCard-root, .MuiPaper-root': {
                   backgroundColor: currentTheme.id === 'dark'
-                    ? 'rgba(30, 41, 59, 0.85)'
-                    : 'rgba(255, 255, 255, 0.85)',
-                  backdropFilter: 'blur(8px)',
+                    ? 'rgba(30, 41, 59, 0.75)'
+                    : 'rgba(255, 255, 255, 0.75)',
+                  backdropFilter: 'blur(12px)',
                   borderColor: currentTheme.id === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
                 }
               }}

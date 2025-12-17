@@ -79,6 +79,9 @@ export default function SaveLoadContent() {
       const imageTilesData = localStorage.getItem("imageTiles");
       if (imageTilesData) zip.file("image-tiles-data.json", imageTilesData);
 
+      const todoStates = localStorage.getItem("todoStates");
+      if (todoStates) zip.file("todo-states.json", todoStates);
+
       const content = await zip.generateAsync({ type: "blob" });
       saveAs(content, "utilities-app-data.zip");
       setStatus("Export completed successfully!");
@@ -138,6 +141,9 @@ export default function SaveLoadContent() {
 
         const imageTilesDataFile = zip.file("image-tiles-data.json");
         if (imageTilesDataFile) localStorage.setItem("imageTiles", await imageTilesDataFile.async("text"));
+
+        const todoStatesFile = zip.file("todo-states.json");
+        if (todoStatesFile) localStorage.setItem("todoStates", await todoStatesFile.async("text"));
 
         setStatus("Import complete! Reloading...");
         setTimeout(() => window.location.reload(), 1500);

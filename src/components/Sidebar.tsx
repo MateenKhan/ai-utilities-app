@@ -17,6 +17,7 @@ import CalculateRoundedIcon from "@mui/icons-material/CalculateRounded";
 import ChecklistRoundedIcon from "@mui/icons-material/ChecklistRounded";
 import ImageRoundedIcon from "@mui/icons-material/ImageRounded";
 import SaveAltRoundedIcon from "@mui/icons-material/SaveAltRounded";
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useTheme as useAppTheme } from "@/components/ThemeProvider";
 import { SIDEBAR_WIDTH, MINI_SIDEBAR_WIDTH, APP_BAR_HEIGHT } from "./layoutConstants";
@@ -44,9 +45,12 @@ export default function Sidebar() {
       }}
     >
       <Box sx={{ px: (isCollapsed && !isMobile) ? 1 : 3, pt: 3, pb: 1, display: 'flex', justifyContent: (isCollapsed && !isMobile) ? 'center' : 'flex-start' }}>
-        <Typography variant="subtitle1" fontWeight={600} noWrap sx={{ display: (isCollapsed && !isMobile) ? 'none' : 'block' }}>
-          Airtajal Utilities
-        </Typography>
+        <Link href="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <HomeRoundedIcon fontSize="small" color="primary" />
+          <Typography variant="subtitle1" fontWeight={600} noWrap sx={{ display: (isCollapsed && !isMobile) ? 'none' : 'block' }}>
+            Airtajal Utilities
+          </Typography>
+        </Link>
         {(isCollapsed && !isMobile) && <Typography variant="caption" fontWeight={700}>AU</Typography>}
       </Box>
       <Divider />

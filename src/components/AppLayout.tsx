@@ -28,28 +28,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     {children}
                 </Container>
             </Box>
-            <Box
-                component="footer"
-                sx={{
-                    ml: { md: `${sidebarWidth}px` },
-                    borderTop: 1,
-                    borderColor: "divider",
-                    bgcolor: "background.paper",
-                    py: 2,
-                    transition: "margin-left 0.3s ease",
-                }}
-            >
-                <Container maxWidth="lg">
-                    <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        textAlign="center"
-                        display="block"
-                    >
-                        Copyright {new Date().getFullYear()} Utilities App. All rights reserved.
-                    </Typography>
-                </Container>
-            </Box>
+
         </Box>
     );
 }
