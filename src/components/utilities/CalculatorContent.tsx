@@ -140,7 +140,7 @@ export default function CalculatorContent() {
   const [operation, setOperation] = useState<string | null>(initialState.operation ?? null);
   const [waitingForOperand, setWaitingForOperand] = useState(Boolean(initialState.waitingForOperand));
   const [currentExpression, setCurrentExpression] = useState(initialState.currentExpression ?? "");
-  const [conversionMode, setConversionMode] = useState<"length" | "weight" | "temperature" | null>(initialState.conversionMode ?? null);
+  const [conversionMode, setConversionMode] = useState<"length" | "weight" | "temperature" | null>(initialState.conversionMode ?? "length");
   // Converter State
   const [unitFrom, setUnitFrom] = useState(initialState.unitFrom ?? "");
   const [unitTo, setUnitTo] = useState(initialState.unitTo ?? "");
@@ -150,6 +150,10 @@ export default function CalculatorContent() {
   const [history, setHistory] = useState<CalculationHistory[]>(loadStoredHistory);
   const [showHistory, setShowHistory] = useState(false);
   const [activeView, setActiveView] = useState<"calculator" | "converter" | "both">(initialState.activeView ?? "both");
+
+  // ... (rest of logic)
+
+
 
   useEffect(() => {
     const state: StoredCalculatorState = {
@@ -382,6 +386,13 @@ export default function CalculatorContent() {
     ["1", "2", "3", "+"],
   ];
 
+  const currentOptions = useMemo(() => {
+    if (conversionMode === "length") return LENGTH_OPTIONS;
+    if (conversionMode === "weight") return WEIGHT_OPTIONS;
+    if (conversionMode === "temperature") return TEMPERATURE_OPTIONS;
+    return [];
+  }, [conversionMode]);
+
   return (
     <Box>
 
@@ -541,7 +552,7 @@ export default function CalculatorContent() {
                       sx={{ mb: 2 }}
                     />
                     <Autocomplete
-                      options={conversionMode === "length" ? LENGTH_OPTIONS : conversionMode === "weight" ? WEIGHT_OPTIONS : TEMPERATURE_OPTIONS}
+                      options={currentOptions.filter(o => o !== unitTo)}
                       value={unitFrom || undefined}
                       onChange={(_e, value) => setUnitFrom(value || "")}
                       renderInput={(params) => <TextField {...params} label="Unit" />}
@@ -564,7 +575,7 @@ export default function CalculatorContent() {
                       sx={{ mb: 2 }}
                     />
                     <Autocomplete
-                      options={conversionMode === "length" ? LENGTH_OPTIONS : conversionMode === "weight" ? WEIGHT_OPTIONS : TEMPERATURE_OPTIONS}
+                      options={currentOptions.filter(o => o !== unitFrom)}
                       value={unitTo || undefined}
                       onChange={(_e, value) => setUnitTo(value || "")}
                       renderInput={(params) => <TextField {...params} label="Unit" />}

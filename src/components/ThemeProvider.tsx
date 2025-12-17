@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode, Suspense } from 'react';
 import { saveAs } from 'file-saver';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { SidebarProvider } from '@/contexts/SidebarContext';
@@ -10,6 +10,8 @@ import {
   CssBaseline,
   GlobalStyles,
 } from '@mui/material';
+import AnimatedBackground from '@/components/AnimatedBackground';
+import RouteRegistry from '@/components/RouteRegistry';
 
 export interface Theme {
   id: string;
@@ -115,9 +117,23 @@ const readStoredCurrentTheme = (): Theme => {
   }
 };
 
+
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [themes, setThemes] = useState<Theme[]>(readStoredThemes);
-  const [currentTheme, setCurrentTheme] = useState<Theme>(readStoredCurrentTheme);
+  const [themes, setThemes] = useState<Theme[]>([defaultTheme, darkTheme]);
+  const [currentTheme, setCurrentTheme] = useState<Theme>(defaultTheme);
+  const [mounted, setMounted] = useState(false);
+
+  // Hydrate themes from local storage on mount
+  useEffect(() => {
+    setMounted(true);
+    const storedThemes = readStoredThemes();
+    const storedCurrent = readStoredCurrentTheme();
+
+    // Only update if different from defaults to avoid unnecessary re-renders
+    // But since we want to restore user state, we should just set them.
+    setThemes(storedThemes);
+    setCurrentTheme(storedCurrent);
+  }, []);
   const parseFontSize = (size: string) => {
     const numeric = parseFloat(size);
     if (Number.isNaN(numeric)) {
@@ -342,13 +358,17 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     // This function is kept for backward compatibility but the save-load page handles complete export
   };
 
-  const [animationsEnabled, setAnimationsEnabled] = useState(() => {
+  const [animationsEnabled, setAnimationsEnabled] = useState(true);
+
+  // Initialize from localStorage on client side
+  useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("animationsEnabled");
-      return saved !== null ? JSON.parse(saved) : true;
+      if (saved !== null) {
+        setAnimationsEnabled(JSON.parse(saved));
+      }
     }
-    return true;
-  });
+  }, []);
 
   // Save animationsEnabled to localStorage
   useEffect(() => {
@@ -371,8 +391,12 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }}>
       <NotificationProvider>
         <SidebarProvider>
+          <Suspense fallback={null}>
+            <RouteRegistry />
+          </Suspense>
           <MuiThemeProvider theme={muiTheme}>
             <CssBaseline />
+            {mounted && <AnimatedBackground />}
             <GlobalStyles
               styles={{
                 '@keyframes twinkle': {
@@ -391,49 +415,10 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 },
                 body: {
                   backgroundColor: 'transparent !important',
-                  color: currentTheme.text,
-                  transition: 'color 0.3s ease',
                   minHeight: '100vh',
-                  position: 'relative',
-                  '&::before': {
-                    content: '""',
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    zIndex: -1,
-                    transition: 'background-image 0.5s ease',
-                    pointerEvents: 'none',
-                    backgroundColor: currentTheme.background,
-                    ...(currentTheme.id === 'dark' ? {
-                      backgroundImage: `
-                          radial-gradient(2px 2px at 10% 10%, rgba(255,255,255,0.9) 1px, transparent 0),
-                          radial-gradient(2px 2px at 20% 40%, rgba(255,255,255,0.7) 1px, transparent 0),
-                          radial-gradient(2px 2px at 30% 70%, rgba(255,255,255,0.8) 1px, transparent 0),
-                          radial-gradient(1.5px 1.5px at 40% 20%, rgba(255,255,255,0.9) 1px, transparent 0),
-                          radial-gradient(2px 2px at 60% 60%, rgba(255,255,255,0.7) 1px, transparent 0),
-                          radial-gradient(2px 2px at 70% 30%, rgba(255,255,255,0.9) 1px, transparent 0),
-                          radial-gradient(1.5px 1.5px at 80% 80%, rgba(255,255,255,0.8) 1px, transparent 0),
-                          radial-gradient(2px 2px at 90% 10%, rgba(255,255,255,0.7) 1px, transparent 0),
-                          linear-gradient(to bottom, #0f172a 0%, #1e293b 100%)
-                        `,
-                      backgroundSize: '550px 550px, 350px 350px, 250px 250px, 150px 150px, 450px 450px, 300px 300px, 200px 200px, 100px 100px, cover',
-                      backgroundAttachment: 'fixed, fixed, fixed, fixed, fixed, fixed, fixed, fixed, fixed',
-                      animation: animationsEnabled ? 'moveStars 60s linear infinite' : 'none',
-                    } : {}),
-                    ...(currentTheme.id === 'default' ? {
-                      backgroundImage: `
-                          radial-gradient(circle at 50% -20%, rgba(253, 224, 71, 0.4) 0%, transparent 40%),
-                          radial-gradient(circle at 100% 0%, rgba(74, 222, 128, 0.2) 0%, transparent 30%),
-                          radial-gradient(circle at 0% 100%, rgba(34, 197, 94, 0.15) 0%, transparent 40%),
-                          radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.4) 0%, transparent 20%),
-                          linear-gradient(to bottom right, #f0f9ff 0%, #dcfce7 100%)
-                        `,
-                      backgroundSize: '120% 120%, 100% 100%, 100% 100%, 80% 80%, cover',
-                      animation: animationsEnabled ? 'moveLeaves 30s ease-in-out infinite alternate' : 'none',
-                    } : {}),
-                  },
+                },
+                html: {
+                  backgroundColor: 'transparent !important',
                 },
                 // Ensure text contrast for form labels and typography
                 '.MuiInputLabel-root': {

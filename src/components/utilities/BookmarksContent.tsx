@@ -18,6 +18,8 @@ import {
   Stack,
   TextField,
   Typography,
+  Tooltip,
+  IconButton
 } from "@mui/material";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
@@ -84,13 +86,6 @@ export default function BookmarksContent() {
       return;
     }
 
-    // Basic Validation: Ensure it at least looks somewhat like a domain or url
-    // Relaxed validation: Just needs to adhere to a loose regex or be non-empty string as requested.
-    // However, let's at least check for a dot or typical characters if we want meaningful bookmarks.
-    // User requested: "urls need not to have the http:// in the validation"
-
-    // We will store exactly what user typed, but for Card href we might prepend https:// if needed
-
     if (currentBookmark) {
       updateBookmark(currentBookmark.id, { name, url });
       showNotification("Bookmark updated successfully", "success");
@@ -112,8 +107,6 @@ export default function BookmarksContent() {
 
   return (
     <Box>
-
-
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }} mb={4}>
         <Box flexGrow={1}>
           <Typography variant="h5" fontWeight={700} gutterBottom>
@@ -123,9 +116,14 @@ export default function BookmarksContent() {
             Save quick shortcuts to your favorite sites with automatically fetched favicons.
           </Typography>
         </Box>
-        <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={() => openModal()}>
-          Add Bookmark
-        </Button>
+        <Tooltip title="Add Bookmark">
+          <IconButton
+            onClick={() => openModal()}
+            sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', '&:hover': { bgcolor: 'primary.dark' } }}
+          >
+            <AddRoundedIcon />
+          </IconButton>
+        </Tooltip>
       </Stack>
 
       {bookmarks.length === 0 ? (
@@ -136,9 +134,14 @@ export default function BookmarksContent() {
           <Typography color="text.secondary" paragraph>
             Create your first bookmark to keep important links at your fingertips.
           </Typography>
-          <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={() => openModal()}>
-            Add Bookmark
-          </Button>
+          <Tooltip title="Add Bookmark">
+            <IconButton
+              onClick={() => openModal()}
+              sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', '&:hover': { bgcolor: 'primary.dark' } }}
+            >
+              <AddRoundedIcon />
+            </IconButton>
+          </Tooltip>
         </Paper>
       ) : (
         <Grid container spacing={2}>

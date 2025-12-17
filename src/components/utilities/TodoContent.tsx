@@ -22,7 +22,8 @@ import {
   FormControl,
   InputLabel,
   InputAdornment,
-  Collapse
+  Collapse,
+  Tooltip
 } from "@mui/material";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
@@ -188,13 +189,17 @@ export default function TodoContent() {
             Manage your tasks effectively with custom statuses.
           </Typography>
         </Box>
-        <Stack direction="row" spacing={2}>
-          <Button variant="outlined" startIcon={<SettingsRoundedIcon />} onClick={() => setShowSettings(!showSettings)}>
-            Manage States
-          </Button>
-          <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={openAddTodoModal}>
-            Add New Todo
-          </Button>
+        <Stack direction="row" spacing={1}>
+          <Tooltip title="Manage States">
+            <IconButton onClick={() => setShowSettings(!showSettings)} color="primary">
+              <SettingsRoundedIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Add New Todo">
+            <IconButton onClick={openAddTodoModal} sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', '&:hover': { bgcolor: 'primary.dark' } }}>
+              <AddRoundedIcon />
+            </IconButton>
+          </Tooltip>
         </Stack>
       </Stack>
 
@@ -255,9 +260,14 @@ export default function TodoContent() {
           <Typography variant="h6" gutterBottom>
             No tasks found in "{states.find(s => s.value === filterState)?.label || filterState}"
           </Typography>
-          <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={openAddTodoModal} sx={{ mt: 2 }}>
-            Create Todo
-          </Button>
+          <Tooltip title="Create New Todo">
+            <IconButton
+              onClick={openAddTodoModal}
+              sx={{ mt: 2, bgcolor: 'primary.main', color: 'primary.contrastText', '&:hover': { bgcolor: 'primary.dark' } }}
+            >
+              <AddRoundedIcon />
+            </IconButton>
+          </Tooltip>
         </Paper>
       ) : (
         <Stack spacing={2}>
@@ -308,16 +318,22 @@ export default function TodoContent() {
                             </FormControl>
                             <Stack direction="row" spacing={1}>
                               {todo.status !== 'done' && (
-                                <IconButton color="success" onClick={() => changeTodoStatus(todo.id, 'done')} size="small" title="Mark as Done">
-                                  <CheckCircleOutlineRoundedIcon />
-                                </IconButton>
+                                <Tooltip title="Mark as Done">
+                                  <IconButton color="success" onClick={() => changeTodoStatus(todo.id, 'done')} size="small">
+                                    <CheckCircleOutlineRoundedIcon />
+                                  </IconButton>
+                                </Tooltip>
                               )}
-                              <IconButton onClick={() => handleEditTodo(todo)} size="small">
-                                <EditRoundedIcon />
-                              </IconButton>
-                              <IconButton color="error" onClick={() => deleteTodo(todo.id)} size="small">
-                                <DeleteOutlineRoundedIcon />
-                              </IconButton>
+                              <Tooltip title="Edit">
+                                <IconButton onClick={() => handleEditTodo(todo)} size="small">
+                                  <EditRoundedIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Delete">
+                                <IconButton color="error" onClick={() => deleteTodo(todo.id)} size="small">
+                                  <DeleteOutlineRoundedIcon />
+                                </IconButton>
+                              </Tooltip>
                             </Stack>
                           </Stack>
                         </Stack>
@@ -351,14 +367,15 @@ export default function TodoContent() {
 
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }}>
                   <Typography variant="subtitle2">Attachments</Typography>
-                  <Button
-                    startIcon={<AttachFileRoundedIcon />}
-                    onClick={() => openAttachmentPicker(todo.id)}
-                    variant="outlined"
-                    size="small"
-                  >
-                    Add Files
-                  </Button>
+                  <Tooltip title="Add Files">
+                    <IconButton
+                      onClick={() => openAttachmentPicker(todo.id)}
+                      color="primary"
+                      size="small"
+                    >
+                      <AttachFileRoundedIcon />
+                    </IconButton>
+                  </Tooltip>
                   {documents && attachmentTargetId === todo.id && (
                     <Chip
                       label={`${documents.length} file(s) ready`}
@@ -462,17 +479,17 @@ export default function TodoContent() {
                 <Typography variant="subtitle2" gutterBottom>
                   Attachments
                 </Typography>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<AttachFileRoundedIcon />}
-                  onClick={() => {
-                    setAttachmentTargetId("new");
-                    fileInputRef.current?.click();
-                  }}
-                >
-                  Choose Files
-                </Button>
+                <Tooltip title="Choose Files">
+                  <IconButton
+                    onClick={() => {
+                      setAttachmentTargetId("new");
+                      fileInputRef.current?.click();
+                    }}
+                    color="primary"
+                  >
+                    <AttachFileRoundedIcon />
+                  </IconButton>
+                </Tooltip>
                 {documents && attachmentTargetId === "new" && (
                   <Chip
                     sx={{ ml: 2 }}
