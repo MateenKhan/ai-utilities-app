@@ -10,7 +10,6 @@ import {
   CssBaseline,
   GlobalStyles,
 } from '@mui/material';
-import AnimatedBackground from '@/components/AnimatedBackground';
 import RouteRegistry from '@/components/RouteRegistry';
 
 export interface Theme {
@@ -40,8 +39,6 @@ interface ThemeContextType {
   exportThemes: () => Promise<void>;
   importThemes: (data: string) => void;
   exportWithFonts: () => Promise<void>;
-  animationsEnabled: boolean;
-  setAnimationsEnabled: (enabled: boolean) => void;
 }
 
 const defaultTheme: Theme = {
@@ -289,10 +286,12 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     root.style.setProperty('--box-shadow', currentTheme.boxShadow);
     root.style.setProperty('--sidebar-background', currentTheme.sidebarBackground || currentTheme.background);
 
-    // Apply font family to body
+    // Apply font family and background to body
     document.body.style.fontFamily = currentTheme.font;
     document.body.style.fontSize = currentTheme.fontSize;
     document.body.style.fontWeight = currentTheme.fontWeight;
+    document.body.style.backgroundColor = currentTheme.background;
+    document.body.style.transition = 'background-color 0.3s ease';
 
     // Add custom fonts
     const existingFonts = document.querySelectorAll('[data-custom-font]');
@@ -358,23 +357,6 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     // This function is kept for backward compatibility but the save-load page handles complete export
   };
 
-  const [animationsEnabled, setAnimationsEnabled] = useState(true);
-
-  // Initialize from localStorage on client side
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("animationsEnabled");
-      if (saved !== null) {
-        setAnimationsEnabled(JSON.parse(saved));
-      }
-    }
-  }, []);
-
-  // Save animationsEnabled to localStorage
-  useEffect(() => {
-    localStorage.setItem('animationsEnabled', JSON.stringify(animationsEnabled));
-  }, [animationsEnabled]);
-
   return (
     <ThemeContext.Provider value={{
       currentTheme,
@@ -386,8 +368,6 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       exportThemes,
       importThemes,
       exportWithFonts,
-      animationsEnabled,
-      setAnimationsEnabled
     }}>
       <NotificationProvider>
         <SidebarProvider>
@@ -396,30 +376,8 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           </Suspense>
           <MuiThemeProvider theme={muiTheme}>
             <CssBaseline />
-            {mounted && <AnimatedBackground />}
             <GlobalStyles
               styles={{
-                '@keyframes twinkle': {
-                  '0%': { opacity: 0.7 },
-                  '50%': { opacity: 1 },
-                  '100%': { opacity: 0.7 },
-                },
-                '@keyframes moveStars': {
-                  'from': { backgroundPosition: '0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0' },
-                  'to': { backgroundPosition: '0 1000px, 0 500px, 0 400px, 0 300px, 0 200px, 0 100px, 0 50px, 0 150px, 0 0' }
-                },
-                '@keyframes moveLeaves': {
-                  '0%': { backgroundPosition: '0% 0%' },
-                  '50%': { backgroundPosition: '100% 100%' },
-                  '100%': { backgroundPosition: '0% 0%' },
-                },
-                body: {
-                  backgroundColor: 'transparent !important',
-                  minHeight: '100vh',
-                },
-                html: {
-                  backgroundColor: 'transparent !important',
-                },
                 // Ensure text contrast for form labels and typography
                 '.MuiInputLabel-root': {
                   color: currentTheme.text,

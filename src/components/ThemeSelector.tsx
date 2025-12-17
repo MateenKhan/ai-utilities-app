@@ -17,7 +17,6 @@ import {
   Stack,
   TextField,
   Typography,
-  Switch,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
@@ -33,8 +32,6 @@ const ThemeSelector: React.FC = () => {
     setTheme,
     addTheme,
     updateTheme,
-    animationsEnabled,
-    setAnimationsEnabled,
   } = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [customizerOpen, setCustomizerOpen] = useState(false);
@@ -192,16 +189,6 @@ const ThemeSelector: React.FC = () => {
             {currentTheme.id === theme.id && <CheckRoundedIcon fontSize="small" color="primary" />}
           </MenuItem>
         ))}
-        <MenuItem sx={{ py: 1, px: 2 }} onClick={(e) => e.stopPropagation()}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" width="100%">
-            <Typography variant="body2" fontWeight={500}>Animations</Typography>
-            <Switch
-              size="small"
-              checked={animationsEnabled}
-              onChange={(e) => setAnimationsEnabled(e.target.checked)}
-            />
-          </Stack>
-        </MenuItem>
         <Divider sx={{ my: 1 }} />
         <MenuItem onClick={handleCustomize} sx={{ py: 1.5 }}>
           <SettingsRoundedIcon fontSize="small" sx={{ mr: 2, color: 'text.secondary' }} />

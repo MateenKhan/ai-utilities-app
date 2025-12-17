@@ -257,6 +257,11 @@ export default function CalculatorContent() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Prevent calculator input when typing in text fields
+      if (e.target instanceof HTMLElement && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+        return;
+      }
+
       if (e.key >= "0" && e.key <= "9") {
         handleDigitClick(e.key);
       } else if (e.key === ".") {
