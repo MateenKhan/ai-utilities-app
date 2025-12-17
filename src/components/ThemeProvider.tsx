@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
 import { saveAs } from 'file-saver';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 import { SidebarProvider } from '@/contexts/SidebarContext';
 import {
   ThemeProvider as MuiThemeProvider,
@@ -351,20 +352,22 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       importThemes,
       exportWithFonts
     }}>
-      <SidebarProvider>
-        <MuiThemeProvider theme={muiTheme}>
-          <CssBaseline />
-          <GlobalStyles
-            styles={{
-              body: {
-                backgroundColor: currentTheme.background,
-                color: currentTheme.text,
-              },
-            }}
-          />
-          {children}
-        </MuiThemeProvider>
-      </SidebarProvider>
+      <NotificationProvider>
+        <SidebarProvider>
+          <MuiThemeProvider theme={muiTheme}>
+            <CssBaseline />
+            <GlobalStyles
+              styles={{
+                body: {
+                  backgroundColor: currentTheme.background,
+                  color: currentTheme.text,
+                },
+              }}
+            />
+            {children}
+          </MuiThemeProvider>
+        </SidebarProvider>
+      </NotificationProvider>
     </ThemeContext.Provider>
   );
 };

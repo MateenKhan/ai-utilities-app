@@ -22,11 +22,13 @@ import {
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 
+import { useNotification } from "@/contexts/NotificationContext";
 import { useBookmarks, type Bookmark } from "@/hooks/useBookmarks";
 
 const getDomainFromUrl = (url: string): string => {
   try {
-    const domain = new URL(url).hostname;
+    const urlToParse = url.startsWith("http") ? url : `https://${url}`;
+    const domain = new URL(urlToParse).hostname;
     return domain.startsWith("www.") ? domain.substring(4) : domain;
   } catch {
     return url;
@@ -35,7 +37,8 @@ const getDomainFromUrl = (url: string): string => {
 
 const getFaviconUrl = (url: string): string => {
   try {
-    const domain = new URL(url).origin;
+    const urlToParse = url.startsWith("http") ? url : `https://${url}`;
+    const domain = new URL(urlToParse).origin;
     return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
   } catch {
     return "";
@@ -44,6 +47,7 @@ const getFaviconUrl = (url: string): string => {
 
 export default function BookmarksContent() {
   const { bookmarks, loading, addBookmark, updateBookmark } = useBookmarks();
+  const { showNotification } = useNotification();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentBookmark, setCurrentBookmark] = useState<Bookmark | null>(null);
   const [name, setName] = useState("");
@@ -71,12 +75,28 @@ export default function BookmarksContent() {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!name.trim() || !url.trim()) return;
+    if (!name.trim()) {
+      showNotification("Name is required", "error");
+      return;
+    }
+    if (!url.trim()) {
+      showNotification("URL is required", "error");
+      return;
+    }
+
+    // Basic Validation: Ensure it at least looks somewhat like a domain or url
+    // Relaxed validation: Just needs to adhere to a loose regex or be non-empty string as requested.
+    // However, let's at least check for a dot or typical characters if we want meaningful bookmarks.
+    // User requested: "urls need not to have the http:// in the validation"
+
+    // We will store exactly what user typed, but for Card href we might prepend https:// if needed
 
     if (currentBookmark) {
       updateBookmark(currentBookmark.id, { name, url });
+      showNotification("Bookmark updated successfully", "success");
     } else {
       addBookmark({ name, url });
+      showNotification("Bookmark added successfully", "success");
     }
 
     closeModal();
@@ -125,13 +145,14 @@ export default function BookmarksContent() {
           {bookmarks.map((bookmark) => {
             const faviconUrl = getFaviconUrl(bookmark.url);
             const domain = getDomainFromUrl(bookmark.url);
+            const href = bookmark.url.startsWith("http") ? bookmark.url : `https://${bookmark.url}`;
 
             return (
               <Grid size={{ xs: 6, sm: 4, md: 3 }} key={bookmark.id}>
                 <Card>
                   <CardActionArea
                     component="a"
-                    href={bookmark.url}
+                    href={href}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -179,12 +200,13 @@ export default function BookmarksContent() {
               />
               <TextField
                 label="URL"
-                type="url"
+                type="text"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://example.com"
+                placeholder="example.com"
                 fullWidth
                 required
+                helperText="http:// or https:// is optional"
               />
             </Stack>
           </DialogContent>
