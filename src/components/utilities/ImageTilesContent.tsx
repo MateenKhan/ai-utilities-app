@@ -18,7 +18,7 @@ import {
 import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
 import ImageRoundedIcon from "@mui/icons-material/ImageRounded";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
-import UtilityNav from "@/components/UtilityNav";
+
 
 type StoredImageState = {
   tileWidth?: string;
@@ -296,7 +296,7 @@ export default function ImageTilesContent() {
 
   return (
     <Box>
-      <UtilityNav current="/image-tiles" />
+
 
       <Typography variant="h5" fontWeight={700} gutterBottom>
         Image Tile Generator
@@ -306,7 +306,7 @@ export default function ImageTilesContent() {
       </Typography>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} lg={6}>
+        <Grid size={{ xs: 12, lg: 6 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -352,7 +352,7 @@ export default function ImageTilesContent() {
                   Physical Image Size
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <TextField
                       label="Width"
                       type="number"
@@ -361,7 +361,7 @@ export default function ImageTilesContent() {
                       fullWidth
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <TextField
                       label="Height"
                       type="number"
@@ -398,7 +398,7 @@ export default function ImageTilesContent() {
                   </Button>
                 </Stack>
                 <Grid container spacing={2}>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <TextField
                       label="Width"
                       type="number"
@@ -407,7 +407,7 @@ export default function ImageTilesContent() {
                       fullWidth
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <TextField
                       label="Height"
                       type="number"
@@ -456,7 +456,7 @@ export default function ImageTilesContent() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} lg={6}>
+        <Grid size={{ xs: 12, lg: 6 }}>
           <Card>
             <CardContent>
               <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ sm: "center" }} mb={2}>
@@ -476,7 +476,7 @@ export default function ImageTilesContent() {
               ) : (
                 <Grid container spacing={2}>
                   {tiles.map((tile, index) => (
-                    <Grid item xs={6} sm={4} key={index}>
+                    <Grid size={{ xs: 6, sm: 4 }} key={index}>
                       <Paper variant="outlined" sx={{ overflow: "hidden", display: "flex", flexDirection: "column", height: '100%' }}>
                         <Box component="img" src={tile} alt={`Tile ${index + 1}`} sx={{ width: "100%", height: 120, objectFit: "cover" }} />
                         <Button

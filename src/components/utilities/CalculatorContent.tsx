@@ -22,7 +22,7 @@ import {
 } from "@mui/material";
 import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
-import UtilityNav from "@/components/UtilityNav";
+
 
 type CalculationHistory = {
   id: string;
@@ -336,7 +336,7 @@ export default function CalculatorContent() {
 
   return (
     <Box>
-      <UtilityNav current="/calculator" />
+
 
       <Typography variant="h5" fontWeight={700} gutterBottom>
         Calculator & Unit Converter
@@ -367,7 +367,7 @@ export default function CalculatorContent() {
               {keypad.map((row, index) => (
                 <Grid container spacing={1} mb={1} key={index}>
                   {row.map((key) => (
-                    <Grid item xs={3} key={key}>
+                    <Grid size={3} key={key}>
                       <Button
                         fullWidth
                         variant={isNaN(Number(key)) && key !== "%" ? "contained" : "outlined"}
@@ -392,17 +392,17 @@ export default function CalculatorContent() {
               ))}
 
               <Grid container spacing={1}>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Button fullWidth variant="outlined" onClick={() => handleDigitClick("0")} sx={{ minHeight: { xs: 64, sm: 48 }, fontSize: { xs: "1.25rem", sm: "0.875rem" } }}>
                     0
                   </Button>
                 </Grid>
-                <Grid item xs={3}>
+                <Grid size={3}>
                   <Button fullWidth variant="outlined" onClick={handleDecimalClick} sx={{ minHeight: { xs: 64, sm: 48 }, fontSize: { xs: "1.25rem", sm: "0.875rem" } }}>
                     .
                   </Button>
                 </Grid>
-                <Grid item xs={3}>
+                <Grid size={3}>
                   <Button fullWidth variant="contained" onClick={handleEqualsClick} sx={{ minHeight: { xs: 64, sm: 48 }, fontSize: { xs: "1.25rem", sm: "0.875rem" } }}>
                     =
                   </Button>

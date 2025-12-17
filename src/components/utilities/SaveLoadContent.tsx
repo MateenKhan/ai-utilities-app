@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import UploadRoundedIcon from "@mui/icons-material/UploadRounded";
-import UtilityNav from "@/components/UtilityNav";
+
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { useTheme } from "@/components/ThemeProvider";
@@ -152,7 +152,7 @@ export default function SaveLoadContent() {
 
   return (
     <Box>
-      <UtilityNav current="/save-load" />
+
 
       <Typography variant="h5" fontWeight={700} gutterBottom>
         Save & Load Data
@@ -162,7 +162,7 @@ export default function SaveLoadContent() {
       </Typography>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -189,7 +189,7 @@ export default function SaveLoadContent() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>

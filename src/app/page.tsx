@@ -39,7 +39,7 @@ export default function HomePage() {
 
       <Grid container spacing={3}>
         {utilities.map((utility) => (
-          <Grid item xs={6} sm={4} md={3} key={utility.id}>
+          <Grid size={{ xs: 6, sm: 4, md: 3 }} key={utility.id}>
             <Card elevation={3} sx={{ height: "100%" }}>
               <CardActionArea
                 component={Link}

@@ -74,9 +74,9 @@ export const useBookmarks = () => {
     return (
       typeof bookmark === 'object' &&
       bookmark !== null &&
-      typeof bookmark.id === 'string' &&
-      typeof bookmark.name === 'string' &&
-      typeof bookmark.url === 'string'
+      typeof (bookmark as any).id === 'string' &&
+      typeof (bookmark as any).name === 'string' &&
+      typeof (bookmark as any).url === 'string'
     );
   };
 

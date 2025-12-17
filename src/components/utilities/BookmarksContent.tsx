@@ -21,7 +21,7 @@ import {
 } from "@mui/material";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
-import UtilityNav from "@/components/UtilityNav";
+
 import { useBookmarks, type Bookmark } from "@/hooks/useBookmarks";
 
 const getDomainFromUrl = (url: string): string => {
@@ -92,7 +92,7 @@ export default function BookmarksContent() {
 
   return (
     <Box>
-      <UtilityNav current="/bookmarks" />
+
 
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }} mb={4}>
         <Box flexGrow={1}>
@@ -127,7 +127,7 @@ export default function BookmarksContent() {
             const domain = getDomainFromUrl(bookmark.url);
 
             return (
-              <Grid item xs={6} sm={4} md={3} key={bookmark.id}>
+              <Grid size={{ xs: 6, sm: 4, md: 3 }} key={bookmark.id}>
                 <Card>
                   <CardActionArea
                     component="a"

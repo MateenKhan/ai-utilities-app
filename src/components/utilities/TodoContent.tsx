@@ -27,7 +27,7 @@ import AttachFileRoundedIcon from "@mui/icons-material/AttachFileRounded";
 import VisibilityRoundedIcon from "@mui/icons-material/VisibilityRounded";
 import FullscreenRoundedIcon from "@mui/icons-material/FullscreenRounded";
 import FullscreenExitRoundedIcon from "@mui/icons-material/FullscreenExitRounded";
-import UtilityNav from "@/components/UtilityNav";
+
 import { useTodos, type Todo } from "@/hooks/useTodos";
 
 export default function TodoContent() {
@@ -137,7 +137,7 @@ export default function TodoContent() {
 
   return (
     <Box>
-      <UtilityNav current="/todo" />
+
 
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }} mb={4}>
         <Box flexGrow={1}>
