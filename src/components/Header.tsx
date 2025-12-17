@@ -7,7 +7,7 @@ import { useSidebar } from "@/contexts/SidebarContext";
 import { APP_BAR_HEIGHT } from "./layoutConstants";
 
 export default function Header() {
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, toggleCollapse } = useSidebar();
 
   return (
     <AppBar
@@ -25,8 +25,15 @@ export default function Header() {
         <IconButton
           color="inherit"
           edge="start"
-          onClick={toggleSidebar}
-          sx={{ display: { md: "none" } }}
+          onClick={() => {
+            // Check if we are on mobile or desktop to decide which toggle to use
+            if (window.innerWidth < 900) {
+              toggleSidebar();
+            } else {
+              toggleCollapse();
+            }
+          }}
+          sx={{ display: "flex" }} // Always show hamburger
           aria-label="Toggle navigation"
         >
           <MenuRoundedIcon />

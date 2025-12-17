@@ -20,7 +20,7 @@ import ImageRoundedIcon from "@mui/icons-material/ImageRounded";
 import SaveAltRoundedIcon from "@mui/icons-material/SaveAltRounded";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useTheme as useAppTheme } from "@/components/ThemeProvider";
-import { SIDEBAR_WIDTH, APP_BAR_HEIGHT } from "./layoutConstants";
+import { SIDEBAR_WIDTH, MINI_SIDEBAR_WIDTH, APP_BAR_HEIGHT } from "./layoutConstants";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home", icon: <HomeRoundedIcon fontSize="small" /> },
@@ -33,7 +33,7 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { isOpen, closeSidebar } = useSidebar();
+  const { isOpen, closeSidebar, isCollapsed } = useSidebar();
   const { currentTheme } = useAppTheme();
 
   const drawerContent = (
@@ -45,10 +45,11 @@ export default function Sidebar() {
         bgcolor: currentTheme.sidebarBackground || "background.paper",
       }}
     >
-      <Box sx={{ px: 3, pt: 3, pb: 1 }}>
-        <Typography variant="subtitle1" fontWeight={600}>
+      <Box sx={{ px: isCollapsed ? 1 : 3, pt: 3, pb: 1, display: 'flex', justifyContent: isCollapsed ? 'center' : 'flex-start' }}>
+        <Typography variant="subtitle1" fontWeight={600} noWrap sx={{ display: isCollapsed ? 'none' : 'block' }}>
           Utilities App
         </Typography>
+        {isCollapsed && <Typography variant="caption" fontWeight={700}>UA</Typography>}
       </Box>
       <Divider />
       <List sx={{ flexGrow: 1 }}>
@@ -63,8 +64,10 @@ export default function Sidebar() {
               onClick={closeSidebar}
               sx={{
                 borderRadius: 2,
-                mx: 1.5,
+                mx: isCollapsed ? 1 : 1.5,
                 my: 0.5,
+                justifyContent: isCollapsed ? 'center' : 'flex-start',
+                px: isCollapsed ? 1 : 2,
                 "&.Mui-selected": {
                   bgcolor: "primary.light",
                   color: "primary.contrastText",
@@ -72,16 +75,24 @@ export default function Sidebar() {
                 },
               }}
             >
-              <ListItemIcon sx={{ minWidth: 36, color: "inherit" }}>
+              <ListItemIcon sx={{ minWidth: isCollapsed ? 0 : 36, color: "inherit", mr: isCollapsed ? 0 : undefined, justifyContent: 'center' }}>
                 {item.icon}
               </ListItemIcon>
-              <ListItemText primary={item.label} />
+              <ListItemText
+                primary={item.label}
+                sx={{
+                  opacity: isCollapsed ? 0 : 1,
+                  display: isCollapsed ? 'none' : 'block',
+                  transition: 'opacity 0.2s',
+                  whiteSpace: 'nowrap'
+                }}
+              />
             </ListItemButton>
           </Link>
         ))}
       </List>
       <Divider />
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: 3, display: isCollapsed ? 'none' : 'block' }}>
         <Typography variant="caption" color="text.secondary">
           Utilities App v1.0
         </Typography>
@@ -113,12 +124,14 @@ export default function Sidebar() {
         sx={{
           display: { xs: "none", md: "block" },
           "& .MuiDrawer-paper": {
-            width: SIDEBAR_WIDTH,
+            width: isCollapsed ? MINI_SIDEBAR_WIDTH : SIDEBAR_WIDTH,
             top: APP_BAR_HEIGHT,
             height: `calc(100% - ${APP_BAR_HEIGHT}px)`,
             boxSizing: "border-box",
             bgcolor: currentTheme.sidebarBackground || "background.paper",
             borderRight: 0,
+            overflowX: "hidden",
+            transition: "width 0.3s ease",
           },
         }}
       >

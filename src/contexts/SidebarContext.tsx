@@ -1,17 +1,29 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 interface SidebarContextType {
-  isOpen: boolean;
-  toggleSidebar: () => void;
-  closeSidebar: () => void;
+  isOpen: boolean; // Mobile open/close
+  isCollapsed: boolean; // Desktop collapse/expand
+  toggleSidebar: () => void; // Mobile toggle
+  closeSidebar: () => void; // Mobile close
+  toggleCollapse: () => void; // Desktop toggle
+  setCollapsed: (collapsed: boolean) => void;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export const SidebarProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // Initialize from localStorage if available
+  useEffect(() => {
+    const stored = localStorage.getItem('sidebarCollapsed');
+    if (stored) {
+      setIsCollapsed(JSON.parse(stored));
+    }
+  }, []);
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -21,8 +33,26 @@ export const SidebarProvider: React.FC<{ children: ReactNode }> = ({ children })
     setIsOpen(false);
   };
 
+  const toggleCollapse = () => {
+    const newState = !isCollapsed;
+    setIsCollapsed(newState);
+    localStorage.setItem('sidebarCollapsed', JSON.stringify(newState));
+  };
+
+  const setCollapsed = (collapsed: boolean) => {
+    setIsCollapsed(collapsed);
+    localStorage.setItem('sidebarCollapsed', JSON.stringify(collapsed));
+  }
+
   return (
-    <SidebarContext.Provider value={{ isOpen, toggleSidebar, closeSidebar }}>
+    <SidebarContext.Provider value={{
+      isOpen,
+      isCollapsed,
+      toggleSidebar,
+      closeSidebar,
+      toggleCollapse,
+      setCollapsed
+    }}>
       {children}
     </SidebarContext.Provider>
   );
