@@ -15,10 +15,12 @@ import {
   Paper,
   Stack,
   TextField,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
   Divider,
+  Tab,
+  Tabs,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
 import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
@@ -136,9 +138,12 @@ export default function CalculatorContent() {
   const [waitingForOperand, setWaitingForOperand] = useState(Boolean(initialState.waitingForOperand));
   const [currentExpression, setCurrentExpression] = useState(initialState.currentExpression ?? "");
   const [conversionMode, setConversionMode] = useState<"length" | "weight" | "temperature" | null>(initialState.conversionMode ?? null);
+  // Converter State
   const [unitFrom, setUnitFrom] = useState(initialState.unitFrom ?? "");
   const [unitTo, setUnitTo] = useState(initialState.unitTo ?? "");
-  const [inputValue, setInputValue] = useState(initialState.inputValue ?? "");
+  const [valueFrom, setValueFrom] = useState(initialState.inputValue ?? "");
+  const [valueTo, setValueTo] = useState("");
+
   const [history, setHistory] = useState<CalculationHistory[]>(loadStoredHistory);
   const [showHistory, setShowHistory] = useState(false);
   const [activeView, setActiveView] = useState<"calculator" | "converter" | "both">(initialState.activeView ?? "both");
@@ -153,11 +158,11 @@ export default function CalculatorContent() {
       conversionMode,
       unitFrom,
       unitTo,
-      inputValue,
+      inputValue: valueFrom,
       activeView,
     };
     localStorage.setItem("calculatorState", JSON.stringify(state));
-  }, [display, previousValue, operation, waitingForOperand, currentExpression, conversionMode, unitFrom, unitTo, inputValue, activeView]);
+  }, [display, previousValue, operation, waitingForOperand, currentExpression, conversionMode, unitFrom, unitTo, valueFrom, activeView]);
 
   useEffect(() => {
     const historyToSave = history.map((item) => ({
@@ -324,7 +329,45 @@ export default function CalculatorContent() {
     return formatNumber((value * fromFactor) / toFactor);
   };
 
-  const formatNumber = (num: number) => num.toFixed(6).replace(/\.?0+$/, "");
+  const calculateConversion = (val: string, from: string, to: string): string => {
+    if (!val || isNaN(parseFloat(val)) || !conversionMode || !from || !to) return "";
+
+    const numValue = parseFloat(val);
+    if (conversionMode === "temperature") {
+      return formatNumber(convertTemperature(numValue, from, to));
+    }
+
+    const units = conversionMode === "length" ? LENGTH_UNITS : WEIGHT_UNITS;
+    const fromFactor = units[from as keyof typeof units];
+    const toFactor = units[to as keyof typeof units];
+    if (fromFactor === undefined || toFactor === undefined) return "";
+
+    return formatNumber((numValue * fromFactor) / toFactor);
+  };
+
+  const formatNumber = (num: number) => {
+    const str = num.toFixed(6).replace(/\.?0+$/, "");
+    return str === "" ? "0" : str;
+  };
+
+  // Handler for Left Input (From)
+  const handleFromChange = (val: string) => {
+    setValueFrom(val);
+    setValueTo(calculateConversion(val, unitFrom, unitTo));
+  };
+
+  // Handler for Right Input (To)
+  const handleToChange = (val: string) => {
+    setValueTo(val);
+    setValueFrom(calculateConversion(val, unitTo, unitFrom));
+  };
+
+  // When units change, re-calculate the "To" value based on "From" value
+  useEffect(() => {
+    if (valueFrom && unitFrom && unitTo) {
+      setValueTo(calculateConversion(valueFrom, unitFrom, unitTo));
+    }
+  }, [unitFrom, unitTo, conversionMode]);
 
   const showCalculator = activeView === "calculator" || activeView === "both";
   const showConverter = activeView === "converter" || activeView === "both";
@@ -340,20 +383,40 @@ export default function CalculatorContent() {
     <Box>
 
 
-      <ToggleButtonGroup value={activeView} exclusive onChange={(_e, value) => value && setActiveView(value)} sx={{ mb: 3 }}>
-        <ToggleButton value="calculator" aria-label="calculator">
-          <CalculateRoundedIcon />
-        </ToggleButton>
-        <ToggleButton value="converter" aria-label="converter">
-          <CompareArrowsRoundedIcon />
-        </ToggleButton>
-        <ToggleButton value="both" aria-label="both">
-          <Box display="flex">
-            <CalculateRoundedIcon sx={{ mr: 1 }} />
-            <CompareArrowsRoundedIcon />
-          </Box>
-        </ToggleButton>
-      </ToggleButtonGroup>
+      <Paper sx={{ mb: 3, borderRadius: 2, overflow: 'hidden' }}>
+        <Tabs
+          value={activeView}
+          onChange={(_e, value) => setActiveView(value)}
+          variant="fullWidth"
+          indicatorColor="primary"
+          textColor="primary"
+          sx={{ bgcolor: 'background.paper' }}
+        >
+          <Tab
+            icon={<CalculateRoundedIcon />}
+            value="calculator"
+            aria-label="calculator"
+            sx={{ minHeight: 64 }}
+          />
+          <Tab
+            icon={<CompareArrowsRoundedIcon />}
+            value="converter"
+            aria-label="converter"
+            sx={{ minHeight: 64 }}
+          />
+          <Tab
+            icon={
+              <Box display="flex">
+                <CalculateRoundedIcon sx={{ mr: 1 }} />
+                <CompareArrowsRoundedIcon />
+              </Box>
+            }
+            value="both"
+            aria-label="both"
+            sx={{ minHeight: 64 }}
+          />
+        </Tabs>
+      </Paper>
 
       <Stack direction={{ xs: "column", md: "row" }} spacing={3}>
         {showCalculator && (
@@ -449,38 +512,48 @@ export default function CalculatorContent() {
               </ToggleButtonGroup>
 
               {conversionMode ? (
-                <Stack spacing={2}>
-                  <TextField label="Value" type="number" value={inputValue} onChange={(e) => setInputValue(e.target.value)} fullWidth />
-                  <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center">
+                  <Box flex={1} width="100%">
+                    <TextField
+                      label="Value"
+                      type="number"
+                      value={valueFrom}
+                      onChange={(e) => handleFromChange(e.target.value)}
+                      fullWidth
+                      sx={{ mb: 2 }}
+                    />
                     <Autocomplete
                       options={conversionMode === "length" ? LENGTH_OPTIONS : conversionMode === "weight" ? WEIGHT_OPTIONS : TEMPERATURE_OPTIONS}
-                      value={unitFrom || null}
+                      value={unitFrom || undefined}
                       onChange={(_e, value) => setUnitFrom(value || "")}
-                      renderInput={(params) => <TextField {...params} label="From" />}
+                      renderInput={(params) => <TextField {...params} label="Unit" />}
                       fullWidth
+                      disableClearable
+                    />
+                  </Box>
+
+                  <Box display="flex" alignItems="center" justifyContent="center" py={{ xs: 2, sm: 0 }}>
+                    <CompareArrowsRoundedIcon fontSize="large" color="action" />
+                  </Box>
+
+                  <Box flex={1} width="100%">
+                    <TextField
+                      label="Converted"
+                      type="number"
+                      value={valueTo}
+                      onChange={(e) => handleToChange(e.target.value)}
+                      fullWidth
+                      sx={{ mb: 2 }}
                     />
                     <Autocomplete
                       options={conversionMode === "length" ? LENGTH_OPTIONS : conversionMode === "weight" ? WEIGHT_OPTIONS : TEMPERATURE_OPTIONS}
-                      value={unitTo || null}
+                      value={unitTo || undefined}
                       onChange={(_e, value) => setUnitTo(value || "")}
-                      renderInput={(params) => <TextField {...params} label="To" />}
+                      renderInput={(params) => <TextField {...params} label="Unit" />}
                       fullWidth
+                      disableClearable
                     />
-                  </Stack>
-
-                  {unitFrom && unitTo && inputValue && (
-                    <Paper variant="outlined" sx={{ p: 3 }}>
-                      <Typography align="center">
-                        {inputValue} {unitFrom}
-                      </Typography>
-                      <Typography align="center" variant="h4" fontWeight={700} my={1}>
-                        {convertValue(parseFloat(inputValue), unitFrom, unitTo)}
-                      </Typography>
-                      <Typography align="center" color="text.secondary">
-                        {unitTo}
-                      </Typography>
-                    </Paper>
-                  )}
+                  </Box>
                 </Stack>
               ) : (
                 <Typography color="text.secondary">Select a conversion category to begin.</Typography>

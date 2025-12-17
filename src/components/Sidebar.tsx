@@ -12,7 +12,6 @@ import {
   Divider,
   Typography,
 } from "@mui/material";
-import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import BookmarkBorderRoundedIcon from "@mui/icons-material/BookmarkBorderRounded";
 import CalculateRoundedIcon from "@mui/icons-material/CalculateRounded";
 import ChecklistRoundedIcon from "@mui/icons-material/ChecklistRounded";
@@ -24,7 +23,6 @@ import { SIDEBAR_WIDTH, MINI_SIDEBAR_WIDTH, APP_BAR_HEIGHT } from "./layoutConst
 
 const NAV_ITEMS = [
   { href: "/todo", label: "Todo List", icon: <ChecklistRoundedIcon fontSize="small" sx={{ color: "#4caf50" }} /> },
-  { href: "/", label: "Home", icon: <HomeRoundedIcon fontSize="small" sx={{ color: "#2196f3" }} /> },
   { href: "/bookmarks", label: "Bookmarks", icon: <BookmarkBorderRoundedIcon fontSize="small" sx={{ color: "#9c27b0" }} /> },
   { href: "/calculator", label: "Calculator", icon: <CalculateRoundedIcon fontSize="small" sx={{ color: "#ff9800" }} /> },
   { href: "/image-tiles", label: "Image Tiles", icon: <ImageRoundedIcon fontSize="small" sx={{ color: "#f44336" }} /> },

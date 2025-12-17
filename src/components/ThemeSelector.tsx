@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -19,13 +19,10 @@ import {
   Typography,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import AddRoundedIcon from "@mui/icons-material/AddRounded";
-import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
-import UploadRoundedIcon from "@mui/icons-material/UploadRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import PaletteRoundedIcon from "@mui/icons-material/PaletteRounded";
-import InventoryRoundedIcon from "@mui/icons-material/InventoryRounded";
-import { useRouter } from "next/navigation";
+import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import { useTheme } from "./ThemeProvider";
 
 const ThemeSelector: React.FC = () => {
@@ -35,17 +32,12 @@ const ThemeSelector: React.FC = () => {
     setTheme,
     addTheme,
     updateTheme,
-    exportThemes,
-    importThemes,
-    exportWithFonts,
   } = useTheme();
-  const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [customizerOpen, setCustomizerOpen] = useState(false);
   const [fontManagerOpen, setFontManagerOpen] = useState(false);
   const [tempTheme, setTempTheme] = useState({ ...currentTheme });
   const [fontUrl, setFontUrl] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const menuOpen = Boolean(anchorEl);
 
@@ -82,37 +74,6 @@ const ThemeSelector: React.FC = () => {
       setTheme(tempTheme.id);
     }
     setCustomizerOpen(false);
-  };
-
-  const handleExport = () => {
-    exportThemes();
-    handleMenuClose();
-  };
-
-  const handleExportWithFonts = async () => {
-    await exportWithFonts();
-    router.push("/save-load");
-    handleMenuClose();
-  };
-
-  const handleImport = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      if (content) {
-        importThemes(content);
-      }
-    };
-    reader.readAsText(file);
-    event.target.value = "";
-    handleMenuClose();
   };
 
   const handleAddFont = () => {
@@ -182,9 +143,20 @@ const ThemeSelector: React.FC = () => {
         Theme
       </Button>
 
-      <Menu anchorEl={anchorEl} open={menuOpen} onClose={handleMenuClose} keepMounted>
-        <Box px={2} py={1}>
-          <Typography variant="subtitle2" color="text.secondary">
+      <Menu
+        anchorEl={anchorEl}
+        open={menuOpen}
+        onClose={handleMenuClose}
+        keepMounted
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        PaperProps={{
+          elevation: 3,
+          sx: { minWidth: 220, mt: 1.5, borderRadius: 2 }
+        }}
+      >
+        <Box px={2} py={1.5}>
+          <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
             Select Theme
           </Typography>
         </Box>
@@ -193,45 +165,36 @@ const ThemeSelector: React.FC = () => {
             key={theme.id}
             selected={currentTheme.id === theme.id}
             onClick={() => handleThemeChange(theme.id)}
+            sx={{
+              py: 1,
+              px: 2,
+              '&.Mui-selected': { bgcolor: 'action.hover' }
+            }}
           >
             <Box
               sx={{
-                width: 12,
-                height: 12,
+                width: 24,
+                height: 24,
                 borderRadius: "50%",
                 bgcolor: theme.primary,
-                mr: 1.5,
+                border: '2px solid',
+                borderColor: 'background.paper',
+                boxShadow: '0 0 0 1px rgba(0,0,0,0.1)',
+                mr: 2,
               }}
             />
-            <Typography variant="body2">{theme.name}</Typography>
+            <Typography variant="body2" fontWeight={500} flexGrow={1}>
+              {theme.name}
+            </Typography>
+            {currentTheme.id === theme.id && <CheckRoundedIcon fontSize="small" color="primary" />}
           </MenuItem>
         ))}
         <Divider sx={{ my: 1 }} />
-        <MenuItem onClick={handleCustomize}>
-          <AddRoundedIcon fontSize="small" sx={{ mr: 1 }} />
-          Customize Theme
-        </MenuItem>
-        <MenuItem onClick={handleExport}>
-          <DownloadRoundedIcon fontSize="small" sx={{ mr: 1 }} />
-          Export Themes
-        </MenuItem>
-        <MenuItem onClick={handleExportWithFonts}>
-          <InventoryRoundedIcon fontSize="small" sx={{ mr: 1 }} />
-          Export with Fonts
-        </MenuItem>
-        <MenuItem onClick={handleImport}>
-          <UploadRoundedIcon fontSize="small" sx={{ mr: 1 }} />
-          Import Themes
+        <MenuItem onClick={handleCustomize} sx={{ py: 1.5 }}>
+          <SettingsRoundedIcon fontSize="small" sx={{ mr: 2, color: 'text.secondary' }} />
+          <Typography variant="body2">Customize</Typography>
         </MenuItem>
       </Menu>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".json"
-        style={{ display: "none" }}
-        onChange={handleFileImport}
-      />
 
       <Dialog open={customizerOpen} onClose={() => setCustomizerOpen(false)} fullWidth maxWidth="md">
         <DialogTitle sx={{ pb: 1 }}>
