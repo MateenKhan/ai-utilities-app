@@ -236,6 +236,7 @@ export default function TodoContent() {
             variant="outlined"
             onClick={() => setShowImportDialog(true)}
             size="small"
+            startIcon={<FaAmazon color="#FF9900" />}
           >
             Import Orders
           </Button>
@@ -529,19 +530,6 @@ export default function TodoContent() {
               fullWidth
               multiline
               minRows={3}
-            />
-            <TextField
-              label="Amazon Link"
-              value={amazonLink}
-              onChange={(e) => setAmazonLink(e.target.value)}
-              fullWidth
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <FaAmazon color="#FF9900" />
-                  </InputAdornment>
-                ),
-              }}
             />
             {!editingId && (
               <Box>

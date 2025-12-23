@@ -3,35 +3,28 @@ import { NextResponse } from 'next/server';
 export async function GET() {
     const clientId = process.env.AMAZON_SP_CLIENT_ID;
     const clientSecret = process.env.AMAZON_SP_CLIENT_SECRET;
-    const refreshToken = process.env.AMAZON_SP_REFRESH_TOKEN;
+    let refreshToken = process.env.AMAZON_SP_REFRESH_TOKEN;
+
+    // Try to load from file if not in env
+    if (!refreshToken || refreshToken === 'YOUR_REFRESH_TOKEN') {
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const tokenPath = path.join(process.cwd(), 'amazon-tokens.json');
+            if (fs.existsSync(tokenPath)) {
+                const tokens = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
+                refreshToken = tokens.refresh_token;
+            }
+        } catch (e) {
+            console.error('Failed to load token file', e);
+        }
+    }
 
     if (!clientId || !clientSecret || !refreshToken || clientId === 'YOUR_CLIENT_ID') {
-        // Return mock data for demonstration if credentials aren't set
         return NextResponse.json({
-            orders: [
-                {
-                    AmazonOrderId: '111-0000000-0000001',
-                    PurchaseDate: new Date().toISOString(),
-                    OrderStatus: 'Unshipped',
-                    OrderTotal: { Amount: '150.00', CurrencyCode: 'INR' },
-                    BuyerInfo: { BuyerName: 'Mock Buyer 1' },
-                    // SP-API doesn't return product names in the Orders API (only Order Items API), 
-                    // but for simplicity in this mock we'll assume we fetched items too or user will fill it.
-                    // To get product details requires a second call to /orders/v0/orders/{orderId}/orderItems
-                    // For now, we'll return a generic title or placeholder.
-                    Title: 'Mock Amazon Product A'
-                },
-                {
-                    AmazonOrderId: '222-0000000-0000002',
-                    PurchaseDate: new Date(Date.now() - 86400000).toISOString(), // Yesterday
-                    OrderStatus: 'Unshipped',
-                    OrderTotal: { Amount: '299.00', CurrencyCode: 'INR' },
-                    BuyerInfo: { BuyerName: 'Mock Buyer 2' },
-                    Title: 'Mock Amazon Product B'
-                }
-            ],
-            mock: true
-        });
+            error: 'Missing Amazon Config. Please click "Connect" to log in.',
+            needsAuth: true
+        }, { status: 401 });
     }
 
     try {
