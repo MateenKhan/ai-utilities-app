@@ -1,17 +1,23 @@
-"use client";
 import { useState, useEffect } from "react";
-import { AppBar, Toolbar, IconButton, Typography, Stack, Tooltip } from "@mui/material";
+import { AppBar, Toolbar, IconButton, Typography, Stack, Tooltip, Button, Avatar, Menu, MenuItem, Box } from "@mui/material";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import BuildRoundedIcon from "@mui/icons-material/BuildRounded";
 import FullscreenRoundedIcon from "@mui/icons-material/FullscreenRounded";
 import FullscreenExitRoundedIcon from "@mui/icons-material/FullscreenExitRounded";
 import ThemeSelector from "@/components/ThemeSelector";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { APP_BAR_HEIGHT } from "./layoutConstants";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
   const { toggleSidebar, toggleCollapse } = useSidebar();
+  const { user, logout, loading } = useAuth();
+  const router = useRouter();
+
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -60,6 +66,19 @@ export default function Header() {
     }
   };
 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    handleMenuClose();
+  };
+
   return (
     <AppBar
       position="fixed"
@@ -77,14 +96,13 @@ export default function Header() {
           color="inherit"
           edge="start"
           onClick={() => {
-            // Check if we are on mobile or desktop to decide which toggle to use
             if (window.innerWidth < 900) {
               toggleSidebar();
             } else {
               toggleCollapse();
             }
           }}
-          sx={{ display: "flex" }} // Always show hamburger
+          sx={{ display: "flex" }}
           aria-label="Toggle navigation"
         >
           <MenuRoundedIcon />
@@ -102,6 +120,40 @@ export default function Header() {
             </IconButton>
           </Tooltip>
           <ThemeSelector />
+
+          {!loading && (
+            user ? (
+              <>
+                <IconButton onClick={handleMenuOpen} sx={{ p: 0, ml: 1 }}>
+                  <Avatar sx={{ width: 32, height: 32, bgcolor: "primary.main" }}>
+                    {user.name ? user.name[0].toUpperCase() : user.email[0].toUpperCase()}
+                  </Avatar>
+                </IconButton>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                >
+                  <Box px={2} py={1}>
+                    <Typography variant="subtitle2">{user.name || "User"}</Typography>
+                    <Typography variant="caption" color="text.secondary">{user.email}</Typography>
+                  </Box>
+                  <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                </Menu>
+              </>
+            ) : (
+              <Stack direction="row" spacing={1} ml={1}>
+                <Button component={Link} href="/login" variant="text" size="small">
+                  Login
+                </Button>
+                <Button component={Link} href="/signup" variant="contained" size="small">
+                  Sign Up
+                </Button>
+              </Stack>
+            )
+          )}
         </Stack>
       </Toolbar>
     </AppBar>

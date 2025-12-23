@@ -11,6 +11,7 @@ import {
   GlobalStyles,
 } from '@mui/material';
 import RouteRegistry from '@/components/RouteRegistry';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export interface Theme {
   id: string;
@@ -370,43 +371,45 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       exportWithFonts,
     }}>
       <NotificationProvider>
-        <SidebarProvider>
-          <Suspense fallback={null}>
-            <RouteRegistry />
-          </Suspense>
-          <MuiThemeProvider theme={muiTheme}>
-            <CssBaseline />
-            <GlobalStyles
-              styles={{
-                // Ensure text contrast for form labels and typography
-                '.MuiInputLabel-root': {
-                  color: currentTheme.text,
-                  opacity: 0.8,
-                },
-                '.MuiInputLabel-root.Mui-focused': {
-                  color: currentTheme.primary,
-                  opacity: 1,
-                },
-                '.MuiTypography-root': {
-                  color: currentTheme.text,
-                },
-                '.MuiTypography-colorTextSecondary': {
-                  color: currentTheme.text,
-                  opacity: 0.7
-                },
-                // Enhance card readability in themes
-                '.MuiCard-root, .MuiPaper-root': {
-                  backgroundColor: currentTheme.id === 'dark'
-                    ? 'rgba(30, 41, 59, 0.75)'
-                    : 'rgba(255, 255, 255, 0.75)',
-                  backdropFilter: 'blur(12px)',
-                  borderColor: currentTheme.id === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-                }
-              }}
-            />
-            {children}
-          </MuiThemeProvider>
-        </SidebarProvider>
+        <AuthProvider>
+          <SidebarProvider>
+            <Suspense fallback={null}>
+              <RouteRegistry />
+            </Suspense>
+            <MuiThemeProvider theme={muiTheme}>
+              <CssBaseline />
+              <GlobalStyles
+                styles={{
+                  // Ensure text contrast for form labels and typography
+                  '.MuiInputLabel-root': {
+                    color: currentTheme.text,
+                    opacity: 0.8,
+                  },
+                  '.MuiInputLabel-root.Mui-focused': {
+                    color: currentTheme.primary,
+                    opacity: 1,
+                  },
+                  '.MuiTypography-root': {
+                    color: currentTheme.text,
+                  },
+                  '.MuiTypography-colorTextSecondary': {
+                    color: currentTheme.text,
+                    opacity: 0.7
+                  },
+                  // Enhance card readability in themes
+                  '.MuiCard-root, .MuiPaper-root': {
+                    backgroundColor: currentTheme.id === 'dark'
+                      ? 'rgba(30, 41, 59, 0.75)'
+                      : 'rgba(255, 255, 255, 0.75)',
+                    backdropFilter: 'blur(12px)',
+                    borderColor: currentTheme.id === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                  }
+                }}
+              />
+              {children}
+            </MuiThemeProvider>
+          </SidebarProvider>
+        </AuthProvider>
       </NotificationProvider>
     </ThemeContext.Provider>
   );

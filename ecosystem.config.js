@@ -1,7 +1,7 @@
 module.exports = {
     apps: [{
-        name: "utilites",
-        script: "./node_modules/next/dist/bin/next",
+        name: "utilities-app",
+        script: "npm",
         args: "start",
         env: {
             NODE_ENV: "production",
