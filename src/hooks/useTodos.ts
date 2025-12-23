@@ -9,6 +9,8 @@ export type Document = {
 
 export type TodoStatus = 'todo' | 'progress' | 'done' | string;
 
+// ... (previous type definitions)
+
 export type Todo = {
   id: string;
   title: string;
@@ -16,6 +18,7 @@ export type Todo = {
   status: TodoStatus;
   documents: Document[];
   createdAt: string; // Store as ISO string for serialization
+  amazonLink?: string;
 };
 
 export type TodoState = {
@@ -56,7 +59,8 @@ const isValidTodo = (todo: unknown): todo is Todo => {
     (typeof candidate.status === 'string' || typeof (candidate as any).completed === 'boolean') &&
     typeof candidate.createdAt === 'string' &&
     Array.isArray(candidate.documents) &&
-    candidate.documents.every(isValidDocument)
+    candidate.documents.every(isValidDocument) &&
+    (candidate.amazonLink === undefined || typeof candidate.amazonLink === 'string')
   );
 };
 
@@ -155,15 +159,31 @@ export const useTodos = () => {
   }, [todos, loading, states]);
 
   // Add a new todo
-  const addTodo = (todo: Omit<Todo, 'id' | 'createdAt' | 'documents' | 'status'> & { documents?: Document[], status?: string }) => {
+  const addTodo = (todo: Omit<Todo, 'id' | 'createdAt' | 'documents' | 'status'> & { documents?: Document[], status?: string, amazonLink?: string }) => {
     const newTodo: Todo = {
       ...todo,
       status: todo.status || 'todo',
       id: Date.now().toString(),
       createdAt: new Date().toISOString(),
       documents: todo.documents || [],
+      amazonLink: todo.amazonLink,
     };
     setTodos(prev => [...prev, newTodo]);
+  };
+
+  // Bulk add todos
+  const addTodos = (newTodos: (Omit<Todo, 'id' | 'createdAt' | 'documents' | 'status'> & { documents?: Document[], status?: string, amazonLink?: string })[]) => {
+    const timestamp = Date.now();
+    const createdTodos: Todo[] = newTodos.map((todo, index) => ({
+      ...todo,
+      status: todo.status || 'todo',
+      id: `${timestamp}-${index}`,
+      createdAt: new Date().toISOString(),
+      documents: todo.documents || [],
+      amazonLink: todo.amazonLink,
+    }));
+
+    setTodos(prev => [...prev, ...createdTodos]);
   };
 
   // Update an existing todo
@@ -230,6 +250,7 @@ export const useTodos = () => {
     states,
     loading,
     addTodo,
+    addTodos,
     updateTodo,
     deleteTodo,
     changeTodoStatus,

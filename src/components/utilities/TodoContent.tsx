@@ -37,24 +37,28 @@ import RadioButtonUncheckedRoundedIcon from "@mui/icons-material/RadioButtonUnch
 import FilterListRoundedIcon from "@mui/icons-material/FilterListRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import { FaAmazon } from "react-icons/fa";
+import ImportOrderDialog from "./ImportOrderDialog";
 
 import { useTodos, type Todo, type TodoStatus } from "@/hooks/useTodos";
 
 export default function TodoContent() {
-  const { todos, states, loading, addTodo, updateTodo, deleteTodo, changeTodoStatus, addDocument, removeDocument, addState, deleteState } = useTodos();
+  // Filter state
+  const [filterState, setFilterState] = useState<string>("todo"); // Default show 'todo'
+  const [showSettings, setShowSettings] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [newStateLabel, setNewStateLabel] = useState("");
+
+  const { todos, states, loading, addTodo, addTodos, updateTodo, deleteTodo, changeTodoStatus, addDocument, removeDocument, addState, deleteState } = useTodos();
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
+  const [amazonLink, setAmazonLink] = useState("");
   const [documents, setDocuments] = useState<FileList | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [minimizedImages, setMinimizedImages] = useState<Record<string, boolean>>({});
   const [attachmentTargetId, setAttachmentTargetId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Filter state
-  const [filterState, setFilterState] = useState<string>("todo"); // Default show 'todo'
-  const [showSettings, setShowSettings] = useState(false);
-  const [newStateLabel, setNewStateLabel] = useState("");
 
   const closeModal = () => {
     setShowModal(false);
@@ -78,20 +82,21 @@ export default function TodoContent() {
       }
     }
 
-    addTodo({ title, note, status: 'todo', documents: newDocs });
+    addTodo({ title, note, status: 'todo', documents: newDocs, amazonLink });
     closeModal();
   };
 
   const handleUpdateTodo = () => {
     if (!editingId || !title.trim()) return;
 
-    updateTodo(editingId, { title, note });
+    updateTodo(editingId, { title, note, amazonLink });
     closeModal();
   };
 
   const handleEditTodo = (todo: Todo) => {
     setTitle(todo.title);
     setNote(todo.note);
+    setAmazonLink(todo.amazonLink || "");
     setEditingId(todo.id);
     setShowModal(true);
   };
@@ -99,6 +104,7 @@ export default function TodoContent() {
   const resetForm = () => {
     setTitle("");
     setNote("");
+    setAmazonLink("");
     setDocuments(null);
     setAttachmentTargetId(null);
   };
@@ -164,6 +170,23 @@ export default function TodoContent() {
     }
   }
 
+  const handleImportOrders = (newTodos: Partial<Todo>[]) => {
+    // Validate that title is present before passing to addTodos
+    const validTodos = newTodos.filter(t => t.title).map(t => ({
+      ...t,
+      title: t.title!,
+      note: t.note || "",
+      documents: t.documents || [],
+      status: t.status || 'todo',
+      amazonLink: t.amazonLink
+    }));
+
+    if (validTodos.length > 0) {
+      addTodos(validTodos);
+    }
+    setShowImportDialog(false);
+  };
+
   const filteredTodos = useMemo(() => {
     return todos
       .filter(t => filterState === 'all' ? true : t.status === filterState)
@@ -190,6 +213,15 @@ export default function TodoContent() {
           </Typography>
         </Box>
         <Stack direction="row" spacing={1}>
+          <Tooltip title="Amazon Seller Central">
+            <IconButton
+              href="https://sellercentral.amazon.in"
+              target="_blank"
+              sx={{ color: '#FF9900' }}
+            >
+              <FaAmazon />
+            </IconButton>
+          </Tooltip>
           <Tooltip title="Manage States">
             <IconButton onClick={() => setShowSettings(!showSettings)} color="primary">
               <SettingsRoundedIcon />
@@ -200,6 +232,13 @@ export default function TodoContent() {
               <AddRoundedIcon />
             </IconButton>
           </Tooltip>
+          <Button
+            variant="outlined"
+            onClick={() => setShowImportDialog(true)}
+            size="small"
+          >
+            Import Orders
+          </Button>
         </Stack>
       </Stack>
 
@@ -288,17 +327,31 @@ export default function TodoContent() {
                                 {todo.note}
                               </Typography>
                             )}
-                            <Stack direction="row" spacing={2} alignItems="center" mt={1}>
-                              <Chip
-                                label={states.find(s => s.value === todo.status)?.label || todo.status}
-                                size="small"
-                                color={todo.status === 'done' ? 'success' : todo.status === 'progress' ? 'info' : 'default'}
-                                variant="outlined"
-                              />
-                              <Typography variant="caption" color="text.secondary">
-                                Created {formatDate(todo.createdAt)}
-                              </Typography>
-                            </Stack>
+                            <Typography variant="caption" color="text.secondary">
+                              Created {formatDate(todo.createdAt)}
+                            </Typography>
+                            {todo.amazonLink && (
+                              <Stack direction="row" spacing={1} alignItems="center" mt={1}>
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  startIcon={<FaAmazon />}
+                                  href={todo.amazonLink}
+                                  target="_blank"
+                                  sx={{
+                                    textTransform: 'none',
+                                    color: '#FF9900',
+                                    borderColor: '#FF9900',
+                                    '&:hover': {
+                                      borderColor: '#e68a00',
+                                      backgroundColor: 'rgba(255, 153, 0, 0.04)'
+                                    }
+                                  }}
+                                >
+                                  Open Link
+                                </Button>
+                              </Stack>
+                            )}
                           </Box>
 
                           <Stack direction="column" spacing={1} alignItems="flex-end">
@@ -393,58 +446,61 @@ export default function TodoContent() {
                   )}
                 </Stack>
 
-                {todo.documents.length > 0 ? (
-                  <Stack spacing={1} mt={2}>
-                    {todo.documents.map((doc) => (
-                      <Paper key={doc.id} variant="outlined" sx={{ p: 2 }}>
-                        {doc.type.startsWith("image/") && (
-                          <Box mb={1}>
-                            <Stack direction="row" justifyContent="space-between" alignItems="center">
-                              <Typography variant="body2" fontWeight={600} noWrap>
-                                {doc.name}
-                              </Typography>
-                              <IconButton size="small" onClick={() => toggleImageMinimize(doc.id)}>
-                                {minimizedImages[doc.id] ? <FullscreenRoundedIcon fontSize="small" /> : <FullscreenExitRoundedIcon fontSize="small" />}
+                {
+                  todo.documents.length > 0 ? (
+                    <Stack spacing={1} mt={2}>
+                      {todo.documents.map((doc) => (
+                        <Paper key={doc.id} variant="outlined" sx={{ p: 2 }}>
+                          {doc.type.startsWith("image/") && (
+                            <Box mb={1}>
+                              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                <Typography variant="body2" fontWeight={600} noWrap>
+                                  {doc.name}
+                                </Typography>
+                                <IconButton size="small" onClick={() => toggleImageMinimize(doc.id)}>
+                                  {minimizedImages[doc.id] ? <FullscreenRoundedIcon fontSize="small" /> : <FullscreenExitRoundedIcon fontSize="small" />}
+                                </IconButton>
+                              </Stack>
+                              {!minimizedImages[doc.id] && (
+                                <Box component="img" src={doc.url} alt={doc.name} sx={{ width: "100%", height: 160, objectFit: "cover", borderRadius: 1, border: "1px solid", borderColor: "divider" }} />
+                              )}
+                            </Box>
+                          )}
+                          <Stack direction="row" justifyContent="space-between" alignItems="center">
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              <AttachFileRoundedIcon fontSize="small" />
+                              <Box>
+                                <Typography variant="body2" fontWeight={600} noWrap>
+                                  {doc.name}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {doc.type || "Untyped"}
+                                </Typography>
+                              </Box>
+                            </Stack>
+                            <Stack direction="row" spacing={1}>
+                              <IconButton component="a" href={doc.url} target="_blank" rel="noopener noreferrer">
+                                <VisibilityRoundedIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton color="error" onClick={() => removeDocument(todo.id, doc.id)}>
+                                <DeleteOutlineRoundedIcon fontSize="small" />
                               </IconButton>
                             </Stack>
-                            {!minimizedImages[doc.id] && (
-                              <Box component="img" src={doc.url} alt={doc.name} sx={{ width: "100%", height: 160, objectFit: "cover", borderRadius: 1, border: "1px solid", borderColor: "divider" }} />
-                            )}
-                          </Box>
-                        )}
-                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <AttachFileRoundedIcon fontSize="small" />
-                            <Box>
-                              <Typography variant="body2" fontWeight={600} noWrap>
-                                {doc.name}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {doc.type || "Untyped"}
-                              </Typography>
-                            </Box>
                           </Stack>
-                          <Stack direction="row" spacing={1}>
-                            <IconButton component="a" href={doc.url} target="_blank" rel="noopener noreferrer">
-                              <VisibilityRoundedIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton color="error" onClick={() => removeDocument(todo.id, doc.id)}>
-                              <DeleteOutlineRoundedIcon fontSize="small" />
-                            </IconButton>
-                          </Stack>
-                        </Stack>
-                      </Paper>
-                    ))}
-                  </Stack>
-                ) : (
-                  <Typography mt={2} color="text.secondary" variant="body2">
-                    No documents attached.
-                  </Typography>
-                )}
+                        </Paper>
+                      ))}
+                    </Stack>
+                  ) : (
+                    <Typography mt={2} color="text.secondary" variant="body2">
+                      No documents attached.
+                    </Typography>
+                  )
+                }
               </CardContent>
             </Card>
-          ))}
-        </Stack>
+          ))
+          }
+        </Stack >
       )}
 
       <input
@@ -473,6 +529,19 @@ export default function TodoContent() {
               fullWidth
               multiline
               minRows={3}
+            />
+            <TextField
+              label="Amazon Link"
+              value={amazonLink}
+              onChange={(e) => setAmazonLink(e.target.value)}
+              fullWidth
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <FaAmazon color="#FF9900" />
+                  </InputAdornment>
+                ),
+              }}
             />
             {!editingId && (
               <Box>
@@ -517,6 +586,12 @@ export default function TodoContent() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+
+      <ImportOrderDialog
+        open={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        onImport={handleImportOrders}
+      />
+    </Box >
   );
 }
