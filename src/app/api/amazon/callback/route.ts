@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
+import { getAmazonConfig } from '@/utils/amazonConfig';
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
@@ -11,8 +12,7 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'No code returned' }, { status: 400 });
     }
 
-    const clientId = process.env.AMAZON_SP_CLIENT_ID;
-    const clientSecret = process.env.AMAZON_SP_CLIENT_SECRET;
+    const { clientId, clientSecret } = getAmazonConfig();
     const redirectUri = 'http://localhost:3000/api/amazon/callback';
 
     try {

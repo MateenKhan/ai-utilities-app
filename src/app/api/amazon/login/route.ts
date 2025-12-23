@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
+import { getAmazonConfig } from '@/utils/amazonConfig';
 
 export async function GET() {
-    const clientId = process.env.AMAZON_SP_CLIENT_ID;
+    const { clientId } = getAmazonConfig();
 
     if (!clientId || clientId === 'YOUR_CLIENT_ID') {
-        return NextResponse.json({ error: 'Missing AMAZON_SP_CLIENT_ID in .env' }, { status: 500 });
+        return NextResponse.json({ error: 'Missing Client ID. Please configure credentials in settings.' }, { status: 500 });
     }
 
     const redirectUri = 'http://localhost:3000/api/amazon/callback';

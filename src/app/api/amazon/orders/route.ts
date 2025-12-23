@@ -1,26 +1,19 @@
 import { NextResponse } from 'next/server';
+import { getAmazonConfig, getAmazonTokens } from '@/utils/amazonConfig';
 
 export async function GET() {
-    const clientId = process.env.AMAZON_SP_CLIENT_ID;
-    const clientSecret = process.env.AMAZON_SP_CLIENT_SECRET;
-    let refreshToken = process.env.AMAZON_SP_REFRESH_TOKEN;
+    const { clientId, clientSecret } = getAmazonConfig();
+    const tokens = getAmazonTokens();
+    const refreshToken = tokens?.refresh_token || process.env.AMAZON_SP_REFRESH_TOKEN;
 
-    // Try to load from file if not in env
-    if (!refreshToken || refreshToken === 'YOUR_REFRESH_TOKEN') {
-        try {
-            const fs = require('fs');
-            const path = require('path');
-            const tokenPath = path.join(process.cwd(), 'amazon-tokens.json');
-            if (fs.existsSync(tokenPath)) {
-                const tokens = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
-                refreshToken = tokens.refresh_token;
-            }
-        } catch (e) {
-            console.error('Failed to load token file', e);
-        }
+    if (!clientId || !clientSecret || clientId === 'YOUR_CLIENT_ID') {
+        return NextResponse.json({
+            error: 'Missing Amazon Configuration.',
+            needsConfig: true
+        }, { status: 401 });
     }
 
-    if (!clientId || !clientSecret || !refreshToken || clientId === 'YOUR_CLIENT_ID') {
+    if (!refreshToken || refreshToken === 'YOUR_REFRESH_TOKEN') {
         return NextResponse.json({
             error: 'Missing Amazon Config. Please click "Connect" to log in.',
             needsAuth: true
