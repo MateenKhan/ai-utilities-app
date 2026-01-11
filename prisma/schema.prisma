@@ -15,7 +15,12 @@ model User {
   password  String
   name      String?
   createdAt DateTime   @default(now())
-  bookmarks Bookmark[]
+  bookmarks         Bookmark[]
+  todos             Todo[]
+  todoStates        TodoState[]
+  calculatorHistory CalculatorHistory[]
+  calculatorState   CalculatorState?
+  imageTileProjects ImageTileProject[]
 }
 
 model Bookmark {
@@ -33,4 +38,59 @@ model Bookmark {
 
   @@index([userId])
   @@index([folder])
+}
+
+model Todo {
+  id          String   @id @default(uuid())
+  title       String
+  note        String?
+  status      String   @default("todo")
+  data        Json?    // Stores documents array, amazonLink, etc.
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model TodoState {
+  id        String   @id @default(uuid())
+  value     String
+  label     String
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, value])
+}
+
+model CalculatorHistory {
+  id         String   @id @default(uuid())
+  expression String
+  result     String
+  timestamp  DateTime @default(now())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([timestamp(sort: Desc)])
+}
+
+model CalculatorState {
+  id     String @id @default(uuid())
+  data   Json   // Stores display, memory, activeView, etc.
+  userId Int    @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ImageTileProject {
+  id        String   @id @default(uuid())
+  name      String?
+  data      Json     // Stores config, tile dimensions, etc. (Avoid huge images if possible)
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }

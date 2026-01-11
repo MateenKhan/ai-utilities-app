@@ -18,7 +18,10 @@ import ChecklistRoundedIcon from "@mui/icons-material/ChecklistRounded";
 import ImageRoundedIcon from "@mui/icons-material/ImageRounded";
 import SaveAltRoundedIcon from "@mui/icons-material/SaveAltRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useTheme as useAppTheme } from "@/components/ThemeProvider";
 import { SIDEBAR_WIDTH, MINI_SIDEBAR_WIDTH, APP_BAR_HEIGHT } from "./layoutConstants";
 
@@ -34,6 +37,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { isOpen, closeSidebar, isCollapsed } = useSidebar();
   const { currentTheme } = useAppTheme();
+  const { user, logout } = useAuth();
 
   const getDrawerContent = (isMobile: boolean) => (
     <Box
@@ -105,6 +109,48 @@ export default function Sidebar() {
       </List>
       <Divider />
       <Box sx={{ p: 3, display: (isCollapsed && !isMobile) ? 'none' : 'block' }}>
+        {user ? (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" fontWeight={600} noWrap>
+              {user.name || 'User'}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" noWrap display="block">
+              {user.email}
+            </Typography>
+            <ListItemButton
+              onClick={logout}
+              sx={{
+                mt: 1,
+                backgroundColor: 'error.light',
+                color: 'error.contrastText',
+                borderRadius: 1,
+                '&:hover': { backgroundColor: 'error.main' }
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 32, color: 'inherit' }}>
+                <LogoutRoundedIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Logout" />
+            </ListItemButton>
+          </Box>
+        ) : (
+          <Link href="/login" style={{ textDecoration: 'none' }}>
+            <ListItemButton
+              sx={{
+                backgroundColor: 'primary.light',
+                color: 'primary.contrastText',
+                borderRadius: 1,
+                mb: 2,
+                '&:hover': { backgroundColor: 'primary.main' }
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 32, color: 'inherit' }}>
+                <LoginRoundedIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Login" />
+            </ListItemButton>
+          </Link>
+        )}
         <Typography variant="caption" color="text.secondary">
           Airtajal Utilities v1.0
         </Typography>
