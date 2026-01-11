@@ -910,18 +910,12 @@ export default function ImageTilesContent() {
                     {tiles.map((tile, index) => (
                       <Box
                         key={index}
+                        className="tile-container"
                         sx={{
                           position: 'relative',
                           overflow: 'hidden',
+                          lineHeight: 0,
                           '&:hover .tile-actions': { opacity: 1 },
-                          lineHeight: 0, // Prevent extra space for inline images
-                          // Thin border for clarity
-                          boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.1)',
-                          transition: 'box-shadow 0.2s, z-index 0s',
-                          '&:hover': {
-                            boxShadow: 'inset 0 0 0 2px #3b82f6', // Blue glow on hover
-                            zIndex: 1, // Bring to front
-                          }
                         }}
                       >
                         <img
@@ -930,7 +924,26 @@ export default function ImageTilesContent() {
                           style={{
                             width: '100%',
                             height: 'auto',
-                            display: 'block'
+                            display: 'block',
+                            position: 'relative',
+                            zIndex: 1
+                          }}
+                        />
+                        {/* Overlay for Border & Glow */}
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            zIndex: 2,
+                            pointerEvents: 'none',
+                            boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.15)',
+                            transition: 'box-shadow 0.2s',
+                            '.tile-container:hover &': {
+                              boxShadow: 'inset 0 0 0 2px #3b82f6',
+                            }
                           }}
                         />
                         <Stack
