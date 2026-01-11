@@ -14,6 +14,9 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  InputAdornment,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
 import ImageRoundedIcon from "@mui/icons-material/ImageRounded";
@@ -87,6 +90,7 @@ export default function ImageTilesContent() {
   const [selectedTile, setSelectedTile] = useState<{ data: string; index: number; row: number; col: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   // Load data from localStorage after mount
   useEffect(() => {
@@ -207,8 +211,19 @@ export default function ImageTilesContent() {
     reader.onload = (event) => {
       if (event.target?.result) {
         const dataUrl = event.target.result as string;
-        setImage(dataUrl);
-        setTiles([]);
+
+        // Load image to get dimensions for auto-population
+        const img = new Image();
+        img.onload = () => {
+          // Auto-populate inputs assuming 96 DPI
+          setImageWidth((img.width / 96).toFixed(2));
+          setImageHeight((img.height / 96).toFixed(2));
+          setImageUnit("inches");
+
+          setImage(dataUrl);
+          setTiles([]);
+        };
+        img.src = dataUrl;
       }
     };
     reader.readAsDataURL(file);
@@ -534,6 +549,11 @@ export default function ImageTilesContent() {
               <Box mt={3}>
                 <Typography variant="subtitle2" gutterBottom>
                   Physical Image Size
+                  {imageDimensions.width > 0 && (
+                    <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1, fontWeight: 'normal' }}>
+                      (Native: {(imageDimensions.width / 96).toFixed(1)}&quot; × {(imageDimensions.height / 96).toFixed(1)}&quot;)
+                    </Typography>
+                  )}
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid size={6}>
@@ -543,6 +563,24 @@ export default function ImageTilesContent() {
                       value={imageWidth}
                       onChange={(e) => handleDimensionChange(setImageWidth, e.target.value)}
                       fullWidth
+                      slotProps={{
+                        input: {
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <Select
+                                value={imageUnit}
+                                onChange={(e) => setImageUnit(e.target.value)}
+                                variant="standard"
+                                disableUnderline
+                                sx={{ '& .MuiSelect-select': { py: 0, fontSize: '0.875rem' } }}
+                              >
+                                <MenuItem value="mm">mm</MenuItem>
+                                <MenuItem value="inches">in</MenuItem>
+                              </Select>
+                            </InputAdornment>
+                          ),
+                        },
+                      }}
                     />
                   </Grid>
                   <Grid size={6}>
@@ -552,18 +590,27 @@ export default function ImageTilesContent() {
                       value={imageHeight}
                       onChange={(e) => handleDimensionChange(setImageHeight, e.target.value)}
                       fullWidth
+                      slotProps={{
+                        input: {
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <Select
+                                value={imageUnit}
+                                onChange={(e) => setImageUnit(e.target.value)}
+                                variant="standard"
+                                disableUnderline
+                                sx={{ '& .MuiSelect-select': { py: 0, fontSize: '0.875rem' } }}
+                              >
+                                <MenuItem value="mm">mm</MenuItem>
+                                <MenuItem value="inches">in</MenuItem>
+                              </Select>
+                            </InputAdornment>
+                          ),
+                        },
+                      }}
                     />
                   </Grid>
                 </Grid>
-                <ToggleButtonGroup
-                  value={imageUnit}
-                  exclusive
-                  onChange={(_e, value) => value && setImageUnit(value)}
-                  sx={{ mt: 1 }}
-                >
-                  <ToggleButton value="mm">Millimeters</ToggleButton>
-                  <ToggleButton value="inches">Inches</ToggleButton>
-                </ToggleButtonGroup>
               </Box>
 
               <Box mt={3}>
@@ -589,6 +636,24 @@ export default function ImageTilesContent() {
                       value={tileWidth}
                       onChange={(e) => handleDimensionChange(setTileWidth, e.target.value)}
                       fullWidth
+                      slotProps={{
+                        input: {
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <Select
+                                value={tileUnit}
+                                onChange={(e) => setTileUnit(e.target.value)}
+                                variant="standard"
+                                disableUnderline
+                                sx={{ '& .MuiSelect-select': { py: 0, fontSize: '0.875rem' } }}
+                              >
+                                <MenuItem value="mm">mm</MenuItem>
+                                <MenuItem value="inches">in</MenuItem>
+                              </Select>
+                            </InputAdornment>
+                          ),
+                        },
+                      }}
                     />
                   </Grid>
                   <Grid size={6}>
@@ -598,18 +663,27 @@ export default function ImageTilesContent() {
                       value={tileHeight}
                       onChange={(e) => handleDimensionChange(setTileHeight, e.target.value)}
                       fullWidth
+                      slotProps={{
+                        input: {
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <Select
+                                value={tileUnit}
+                                onChange={(e) => setTileUnit(e.target.value)}
+                                variant="standard"
+                                disableUnderline
+                                sx={{ '& .MuiSelect-select': { py: 0, fontSize: '0.875rem' } }}
+                              >
+                                <MenuItem value="mm">mm</MenuItem>
+                                <MenuItem value="inches">in</MenuItem>
+                              </Select>
+                            </InputAdornment>
+                          ),
+                        },
+                      }}
                     />
                   </Grid>
                 </Grid>
-                <ToggleButtonGroup
-                  value={tileUnit}
-                  exclusive
-                  onChange={(_e, value) => value && setTileUnit(value)}
-                  sx={{ mt: 1 }}
-                >
-                  <ToggleButton value="mm">Millimeters</ToggleButton>
-                  <ToggleButton value="inches">Inches</ToggleButton>
-                </ToggleButtonGroup>
               </Box>
 
               <Box mt={3}>
@@ -694,81 +768,100 @@ export default function ImageTilesContent() {
                     <Typography variant="body2">No tiles generated yet.</Typography>
                   </Stack>
                 ) : (
-                  <Grid container spacing={0}>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: `repeat(${tileCount.cols}, 1fr)`,
+                      gap: 0,
+                      width: '100%',
+                      maxWidth: '100%',
+                      margin: '0 auto',
+                      bgcolor: 'background.paper',
+                      boxShadow: 3,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
                     {tiles.map((tile, index) => (
-                      <Grid size={{ xs: 6, sm: 4 }} key={index}>
-                        <Paper
-                          variant="outlined"
+                      <Box
+                        key={index}
+                        sx={{
+                          position: 'relative',
+                          overflow: 'hidden',
+                          '&:hover .tile-actions': { opacity: 1 },
+                          lineHeight: 0 // Prevent extra space for inline images
+                        }}
+                      >
+                        <img
+                          src={tile}
+                          alt={`Tile ${index + 1}`}
+                          style={{
+                            width: '100%',
+                            height: 'auto',
+                            display: 'block'
+                          }}
+                        />
+                        <Stack
+                          className="tile-actions"
+                          direction="row"
+                          spacing={0}
                           sx={{
-                            overflow: "hidden",
-                            display: "flex",
-                            flexDirection: "column",
-                            height: '100%',
-                            position: 'relative',
-                            '&:hover .tile-actions': { opacity: 1 }
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            bgcolor: 'rgba(255,255,255,0.95)',
+                            backdropFilter: 'blur(2px)',
+                            borderTop: 1,
+                            borderColor: 'divider',
+                            opacity: 0,
+                            transition: 'opacity 0.2s ease-in-out',
+                            zIndex: 10
                           }}
                         >
-                          <Box component="img" src={tile} alt={`Tile ${index + 1}`} sx={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} />
-                          <Stack
-                            className="tile-actions"
-                            direction="row"
-                            spacing={0}
-                            sx={{
-                              position: 'absolute',
-                              bottom: 0,
-                              left: 0,
-                              right: 0,
-                              bgcolor: 'rgba(255,255,255,0.95)',
-                              backdropFilter: 'blur(2px)',
-                              borderTop: 1,
-                              borderColor: 'divider',
-                              opacity: 0,
-                              transition: 'opacity 0.2s ease-in-out'
-                            }}
-                          >
-                            <Tooltip title="Print Tile">
-                              <Button
-                                fullWidth
-                                size="medium"
-                                variant="text"
-                                onClick={() => handlePrintPreview(tile, index)}
-                                sx={{
-                                  minHeight: 40,
-                                  borderRadius: 0,
-                                  borderRight: 1,
-                                  borderColor: 'divider',
-                                  color: 'text.secondary',
-                                  '&:hover': { color: 'primary.main', bgcolor: 'action.hover' }
-                                }}
-                              >
-                                <PrintIcon />
-                              </Button>
-                            </Tooltip>
-                            <Tooltip title="Download Tile">
-                              <Button
-                                fullWidth
-                                size="medium"
-                                variant="text"
-                                onClick={() => handleDownloadTile(tile, index)}
-                                sx={{
-                                  minHeight: 40,
-                                  borderRadius: 0,
-                                  color: 'text.secondary',
-                                  '&:hover': { color: 'primary.main', bgcolor: 'action.hover' }
-                                }}
-                              >
-                                <DownloadRoundedIcon />
-                              </Button>
-                            </Tooltip>
-                          </Stack>
-                        </Paper>
-                      </Grid>
+                          <Tooltip title="Print Tile">
+                            <Button
+                              fullWidth
+                              size="small"
+                              variant="text"
+                              onClick={() => handlePrintPreview(tile, index)}
+                              sx={{
+                                minHeight: 32,
+                                borderRadius: 0,
+                                borderRight: 1,
+                                borderColor: 'divider',
+                                color: 'text.secondary',
+                                '&:hover': { color: 'primary.main', bgcolor: 'action.hover' }
+                              }}
+                            >
+                              <PrintIcon fontSize="small" />
+                            </Button>
+                          </Tooltip>
+                          <Tooltip title="Download Tile">
+                            <Button
+                              fullWidth
+                              size="small"
+                              variant="text"
+                              onClick={() => handleDownloadTile(tile, index)}
+                              sx={{
+                                minHeight: 32,
+                                borderRadius: 0,
+                                color: 'text.secondary',
+                                '&:hover': { color: 'primary.main', bgcolor: 'action.hover' }
+                              }}
+                            >
+                              <DownloadRoundedIcon fontSize="small" />
+                            </Button>
+                          </Tooltip>
+                        </Stack>
+                      </Box>
                     ))}
-                  </Grid>
+                  </Box>
                 )}
               </CardContent>
             </Card>
           </Grid>
+        )}
       </Grid>
 
       <canvas ref={canvasRef} hidden />
