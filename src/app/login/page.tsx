@@ -3,100 +3,200 @@
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import {
+    Box,
+    Button,
+    TextField,
+    Typography,
+    Paper,
+    Container,
+    Alert,
+    CircularProgress,
+    InputAdornment,
+    IconButton,
+    useTheme as useMuiTheme
+} from '@mui/material';
+import {
+    EmailOutlined,
+    LockOutlined,
+    Visibility,
+    VisibilityOff,
+    LoginRounded
+} from '@mui/icons-material';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const { login } = useAuth();
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const muiTheme = useMuiTheme();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
         setError('');
 
-        const success = await login({ email, password });
-        if (success) {
-            router.push('/');
-        } else {
-            setError('Invalid email or password');
+        try {
+            const success = await login({ email, password });
+            if (success) {
+                router.push('/');
+            } else {
+                setError('Invalid email or password. Please check your credentials.');
+            }
+        } catch (err) {
+            setError('An unexpected error occurred. Please try again later.');
+        } finally {
+            setIsSubmitting(false);
         }
-        setIsSubmitting(false);
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-zinc-900 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8 bg-white dark:bg-zinc-800 p-8 rounded-xl shadow-lg border border-gray-100 dark:border-zinc-700">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-                        Sign in to your account
-                    </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-                        Welcome back! Please enter your details.
-                    </p>
-                </div>
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    <div className="rounded-md shadow-sm -space-y-px">
-                        <div className="mb-4">
-                            <label htmlFor="email-address" className="sr-only">
-                                Email address
-                            </label>
-                            <input
-                                id="email-address"
-                                name="email"
-                                type="email"
-                                autoComplete="email"
-                                required
-                                className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-gray-300 dark:border-zinc-600 placeholder-gray-500 text-gray-900 dark:text-gray-100 dark:bg-zinc-700 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm transition-colors duration-200"
-                                placeholder="Email address"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="password" className="sr-only">
-                                Password
-                            </label>
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                autoComplete="current-password"
-                                required
-                                className="appearance-none rounded-lg relative block w-full px-3 py-3 border border-gray-300 dark:border-zinc-600 placeholder-gray-500 text-gray-900 dark:text-gray-100 dark:bg-zinc-700 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm transition-colors duration-200"
-                                placeholder="Password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    {error && (
-                        <div className="text-red-500 text-sm text-center bg-red-50 dark:bg-red-900/20 p-2 rounded-lg">
-                            {error}
-                        </div>
-                    )}
-
-                    <div>
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white ${isSubmitting ? 'bg-primary/70 cursor-not-allowed' : 'bg-primary hover:bg-primary-dark'
-                                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-200 shadow-md hover:shadow-lg`}
+        <Box
+            sx={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: muiTheme.palette.mode === 'dark'
+                    ? 'radial-gradient(circle at top right, #1a1a1a, #000000)'
+                    : 'radial-gradient(circle at top right, #f0f7ff, #ffffff)',
+                p: 2
+            }}
+        >
+            <Container maxWidth="sm">
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: { xs: 4, sm: 6 },
+                        borderRadius: 4,
+                        bgcolor: muiTheme.palette.mode === 'dark' ? 'rgba(30, 30, 30, 0.6)' : 'rgba(255, 255, 255, 0.8)',
+                        backdropFilter: 'blur(20px)',
+                        border: '1px solid',
+                        borderColor: muiTheme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.1)'
+                    }}
+                >
+                    <Box component="form" onSubmit={handleSubmit} sx={{ textAlign: 'center' }}>
+                        <Box
+                            sx={{
+                                display: 'inline-flex',
+                                p: 1.5,
+                                borderRadius: 3,
+                                bgcolor: 'primary.main',
+                                color: 'white',
+                                mb: 3,
+                                boxShadow: '0 4px 14px 0 rgba(0, 118, 255, 0.39)'
+                            }}
                         >
-                            {isSubmitting ? 'Signing in...' : 'Sign in'}
-                        </button>
-                    </div>
+                            <LoginRounded fontSize="large" />
+                        </Box>
 
-                    <div className="text-center text-xs text-gray-500 mt-4">
-                        <p>Demo Credentials:</p>
-                        <p>Email: test@test.com</p>
-                        <p>Password: test</p>
-                    </div>
-                </form>
-            </div>
-        </div>
+                        <Typography variant="h4" fontWeight={800} gutterBottom sx={{ letterSpacing: '-0.5px' }}>
+                            Welcome Back
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                            Sign in to access your utilities and synced data.
+                        </Typography>
+
+                        {error && (
+                            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+                                {error}
+                            </Alert>
+                        )}
+
+                        <TextField
+                            fullWidth
+                            label="Email Address"
+                            variant="outlined"
+                            margin="normal"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            slotProps={{
+                                input: {
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <EmailOutlined color="action" />
+                                        </InputAdornment>
+                                    ),
+                                }
+                            }}
+                            sx={{ mb: 2 }}
+                        />
+
+                        <TextField
+                            fullWidth
+                            label="Password"
+                            type={showPassword ? 'text' : 'password'}
+                            variant="outlined"
+                            margin="normal"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            slotProps={{
+                                input: {
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <LockOutlined color="action" />
+                                        </InputAdornment>
+                                    ),
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                edge="end"
+                                            >
+                                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    )
+                                }
+                            }}
+                            sx={{ mb: 4 }}
+                        />
+
+                        <Button
+                            fullWidth
+                            type="submit"
+                            variant="contained"
+                            size="large"
+                            disabled={isSubmitting}
+                            sx={{
+                                py: 1.8,
+                                borderRadius: 2,
+                                fontSize: '1.1rem',
+                                fontWeight: 700,
+                                textTransform: 'none',
+                                boxShadow: '0 4px 14px 0 rgba(0, 118, 255, 0.39)',
+                                '&:hover': {
+                                    boxShadow: '0 6px 20px rgba(0, 118, 255, 0.23)',
+                                }
+                            }}
+                        >
+                            {isSubmitting ? (
+                                <CircularProgress size={24} color="inherit" />
+                            ) : (
+                                'Sign In'
+                            )}
+                        </Button>
+
+                        <Box sx={{ mt: 4, p: 2, borderRadius: 2, bgcolor: 'action.hover' }}>
+                            <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
+                                Demo Account
+                            </Typography>
+                            <Typography variant="body2" fontWeight={600}>
+                                Email: test@test.com
+                            </Typography>
+                            <Typography variant="body2" fontWeight={600}>
+                                Password: test
+                            </Typography>
+                        </Box>
+                    </Box>
+                </Paper>
+            </Container>
+        </Box>
     );
 }

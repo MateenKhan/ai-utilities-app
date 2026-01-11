@@ -10,7 +10,7 @@ async function getUser() {
     return verifyToken(token.value);
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const user = await getUser();
         if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -45,7 +45,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const user = await getUser();
         if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });

@@ -1,0 +1,14 @@
+﻿Connected to PG
+Search path set to: utility_schema
+Current schema: utility_schema
+Tables in utility_schema : [
+  'User',
+  'Bookmark',
+  'Todo',
+  'TodoState',
+  'CalculatorHistory',
+  'CalculatorState',
+  'ImageTileProject',
+  'SavedImage'
+]
+Users count via direct SQL: 1

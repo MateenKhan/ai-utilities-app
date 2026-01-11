@@ -21,6 +21,7 @@ model User {
   calculatorHistory CalculatorHistory[]
   calculatorState   CalculatorState?
   imageTileProjects ImageTileProject[]
+  savedImages       SavedImage[]
 }
 
 model Bookmark {
@@ -91,6 +92,19 @@ model ImageTileProject {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model SavedImage {
+  id          String   @id @default(uuid())
+  name        String?
+  description String?
+  category    String?
+  minioKey    String
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
 
   @@index([userId])
 }
