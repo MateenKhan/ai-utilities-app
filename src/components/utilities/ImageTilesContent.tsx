@@ -363,6 +363,10 @@ export default function ImageTilesContent() {
           localStorage.setItem("imageTiles", JSON.stringify(newTiles));
         }
         setProcessing(false);
+        // Scroll to results
+        setTimeout(() => {
+          resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
       };
 
       img.onerror = () => {
@@ -469,8 +473,8 @@ export default function ImageTilesContent() {
         Split large posters or artwork into printable tiles with precise physical measurements.
       </Typography>
 
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, lg: 6 }}>
+      <Grid container spacing={4} direction="column" alignItems="center">
+        <Grid size={{ xs: 12, md: 10, lg: 8 }} sx={{ width: '100%' }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -666,104 +670,105 @@ export default function ImageTilesContent() {
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <Card>
-            <CardContent>
-              <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ sm: "center" }} mb={2} spacing={1}>
-                <Typography variant="h6">Generated Tiles</Typography>
-                {tiles.length > 0 && (
-                  <Stack direction="row" spacing={1}>
-                    <Button startIcon={<DownloadRoundedIcon />} onClick={handleDownloadAll} variant="outlined" size="small">
-                      Download All
-                    </Button>
-                    <Button startIcon={<DownloadRoundedIcon />} onClick={handleDownloadAllAsZip} variant="contained" size="small">
-                      Download ZIP
-                    </Button>
-                  </Stack>
-                )}
-              </Stack>
-
-              {tiles.length === 0 ? (
-                <Stack spacing={1} alignItems="center" py={6} color="text.secondary">
-                  <ImageRoundedIcon fontSize="large" />
-                  <Typography variant="body2">No tiles generated yet.</Typography>
+        {tiles.length > 0 && (
+          <Grid size={{ xs: 12, md: 10, lg: 8 }} sx={{ width: '100%' }} ref={resultsRef}>
+            <Card>
+              <CardContent>
+                <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ sm: "center" }} mb={2} spacing={1}>
+                  <Typography variant="h6">Generated Tiles</Typography>
+                  {tiles.length > 0 && (
+                    <Stack direction="row" spacing={1}>
+                      <Button startIcon={<DownloadRoundedIcon />} onClick={handleDownloadAll} variant="outlined" size="small">
+                        Download All
+                      </Button>
+                      <Button startIcon={<DownloadRoundedIcon />} onClick={handleDownloadAllAsZip} variant="contained" size="small">
+                        Download ZIP
+                      </Button>
+                    </Stack>
+                  )}
                 </Stack>
-              ) : (
-                <Grid container spacing={0}>
-                  {tiles.map((tile, index) => (
-                    <Grid size={{ xs: 6, sm: 4 }} key={index}>
-                      <Paper
-                        variant="outlined"
-                        sx={{
-                          overflow: "hidden",
-                          display: "flex",
-                          flexDirection: "column",
-                          height: '100%',
-                          position: 'relative',
-                          '&:hover .tile-actions': { opacity: 1 }
-                        }}
-                      >
-                        <Box component="img" src={tile} alt={`Tile ${index + 1}`} sx={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} />
-                        <Stack
-                          className="tile-actions"
-                          direction="row"
-                          spacing={0}
+
+                {tiles.length === 0 ? (
+                  <Stack spacing={1} alignItems="center" py={6} color="text.secondary">
+                    <ImageRoundedIcon fontSize="large" />
+                    <Typography variant="body2">No tiles generated yet.</Typography>
+                  </Stack>
+                ) : (
+                  <Grid container spacing={0}>
+                    {tiles.map((tile, index) => (
+                      <Grid size={{ xs: 6, sm: 4 }} key={index}>
+                        <Paper
+                          variant="outlined"
                           sx={{
-                            position: 'absolute',
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            bgcolor: 'rgba(255,255,255,0.95)',
-                            backdropFilter: 'blur(2px)',
-                            borderTop: 1,
-                            borderColor: 'divider',
-                            opacity: 0,
-                            transition: 'opacity 0.2s ease-in-out'
+                            overflow: "hidden",
+                            display: "flex",
+                            flexDirection: "column",
+                            height: '100%',
+                            position: 'relative',
+                            '&:hover .tile-actions': { opacity: 1 }
                           }}
                         >
-                          <Tooltip title="Print Tile">
-                            <Button
-                              fullWidth
-                              size="medium"
-                              variant="text"
-                              onClick={() => handlePrintPreview(tile, index)}
-                              sx={{
-                                minHeight: 40,
-                                borderRadius: 0,
-                                borderRight: 1,
-                                borderColor: 'divider',
-                                color: 'text.secondary',
-                                '&:hover': { color: 'primary.main', bgcolor: 'action.hover' }
-                              }}
-                            >
-                              <PrintIcon />
-                            </Button>
-                          </Tooltip>
-                          <Tooltip title="Download Tile">
-                            <Button
-                              fullWidth
-                              size="medium"
-                              variant="text"
-                              onClick={() => handleDownloadTile(tile, index)}
-                              sx={{
-                                minHeight: 40,
-                                borderRadius: 0,
-                                color: 'text.secondary',
-                                '&:hover': { color: 'primary.main', bgcolor: 'action.hover' }
-                              }}
-                            >
-                              <DownloadRoundedIcon />
-                            </Button>
-                          </Tooltip>
-                        </Stack>
-                      </Paper>
-                    </Grid>
-                  ))}
-                </Grid>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
+                          <Box component="img" src={tile} alt={`Tile ${index + 1}`} sx={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} />
+                          <Stack
+                            className="tile-actions"
+                            direction="row"
+                            spacing={0}
+                            sx={{
+                              position: 'absolute',
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              bgcolor: 'rgba(255,255,255,0.95)',
+                              backdropFilter: 'blur(2px)',
+                              borderTop: 1,
+                              borderColor: 'divider',
+                              opacity: 0,
+                              transition: 'opacity 0.2s ease-in-out'
+                            }}
+                          >
+                            <Tooltip title="Print Tile">
+                              <Button
+                                fullWidth
+                                size="medium"
+                                variant="text"
+                                onClick={() => handlePrintPreview(tile, index)}
+                                sx={{
+                                  minHeight: 40,
+                                  borderRadius: 0,
+                                  borderRight: 1,
+                                  borderColor: 'divider',
+                                  color: 'text.secondary',
+                                  '&:hover': { color: 'primary.main', bgcolor: 'action.hover' }
+                                }}
+                              >
+                                <PrintIcon />
+                              </Button>
+                            </Tooltip>
+                            <Tooltip title="Download Tile">
+                              <Button
+                                fullWidth
+                                size="medium"
+                                variant="text"
+                                onClick={() => handleDownloadTile(tile, index)}
+                                sx={{
+                                  minHeight: 40,
+                                  borderRadius: 0,
+                                  color: 'text.secondary',
+                                  '&:hover': { color: 'primary.main', bgcolor: 'action.hover' }
+                                }}
+                              >
+                                <DownloadRoundedIcon />
+                              </Button>
+                            </Tooltip>
+                          </Stack>
+                        </Paper>
+                      </Grid>
+                    ))}
+                  </Grid>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
       </Grid>
 
       <canvas ref={canvasRef} hidden />
