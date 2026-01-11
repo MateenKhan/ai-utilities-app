@@ -17,6 +17,7 @@ import {
   InputAdornment,
   Select,
   MenuItem,
+  CircularProgress,
 } from "@mui/material";
 import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
 import ImageRoundedIcon from "@mui/icons-material/ImageRounded";
@@ -26,6 +27,10 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import { Slider, IconButton, Tooltip } from "@mui/material";
 import PrintPreviewModal from "./PrintPreviewModal";
+import SavedProjectsList from "./SavedProjectsList";
+import { useAuth } from "@/context/AuthContext";
+import SaveIcon from "@mui/icons-material/Save";
+import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import JSZip from "jszip";
 
 
@@ -88,6 +93,10 @@ export default function ImageTilesContent() {
   const [tileCount, setTileCount] = useState({ rows: 0, cols: 0, total: 0 });
   const [printPreviewOpen, setPrintPreviewOpen] = useState(false);
   const [selectedTile, setSelectedTile] = useState<{ data: string; index: number; row: number; col: number } | null>(null);
+  const [savedProjectsOpen, setSavedProjectsOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const { user } = useAuth();
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -476,17 +485,117 @@ export default function ImageTilesContent() {
     }
   };
 
+  const handleSaveToCloud = async () => {
+    if (!image) return;
+    setSaving(true);
+    try {
+      const formData = new FormData();
+
+      let fileToUpload = imageFile;
+      if (!fileToUpload && image) {
+        try {
+          const res = await fetch(image);
+          const blob = await res.blob();
+          fileToUpload = new File([blob], "image.png", { type: blob.type });
+        } catch (e) { console.error(e); }
+      }
+
+      if (fileToUpload) {
+        formData.append('image', fileToUpload);
+      }
+
+      const config = {
+        tileWidth, tileHeight, tileUnit,
+        imageWidth, imageHeight, imageUnit,
+        overlap
+      };
+
+      formData.append('data', JSON.stringify(config));
+      const name = imageFile?.name || `Project ${new Date().toLocaleString()}`;
+      formData.append('name', name);
+
+      const res = await fetch('/api/image-tiles', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!res.ok) throw new Error('Save failed');
+      alert('Project saved to cloud!');
+    } catch (error) {
+      console.error(error);
+      setError('Failed to save to cloud');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleLoadProject = async (project: any) => {
+    try {
+      setSavedProjectsOpen(false);
+      const { data, imageUrl } = project;
+
+      if (data.tileWidth) setTileWidth(data.tileWidth);
+      if (data.tileHeight) setTileHeight(data.tileHeight);
+      if (data.tileUnit) setTileUnit(data.tileUnit);
+      if (data.imageWidth) setImageWidth(data.imageWidth);
+      if (data.imageHeight) setImageHeight(data.imageHeight);
+      if (data.imageUnit) setImageUnit(data.imageUnit);
+      if (data.overlap) setOverlap(data.overlap);
+
+      if (imageUrl) {
+        try {
+          const res = await fetch(imageUrl);
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          setImage(url);
+          setTiles([]);
+          const img = new Image();
+          img.onload = () => {
+            setImageDimensions({ width: img.width, height: img.height });
+            calculateTileCount(img.width, img.height, data.tileWidth, data.tileHeight);
+          };
+          img.src = url;
+          setImageFile(null);
+        } catch (e) {
+          console.error('Failed to load image blob', e);
+          setError('Failed to load project image');
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
 
   return (
     <Box>
 
 
-      <Typography variant="h5" fontWeight={700} gutterBottom>
-        Image Tile Generator
-      </Typography>
-      <Typography color="text.secondary" mb={3}>
-        Split large posters or artwork into printable tiles with precise physical measurements.
-      </Typography>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
+        <Box>
+          <Typography variant="h5" fontWeight={700} gutterBottom>
+            Image Tile Generator
+          </Typography>
+          <Typography color="text.secondary">
+            Split large posters or artwork into printable tiles with precise physical measurements.
+          </Typography>
+        </Box>
+        {user && (
+          <Button
+            startIcon={<LibraryBooksIcon />}
+            onClick={() => setSavedProjectsOpen(true)}
+            variant="outlined"
+          >
+            My Saved Projects
+          </Button>
+        )}
+      </Stack>
+
+      <SavedProjectsList
+        open={savedProjectsOpen}
+        onClose={() => setSavedProjectsOpen(false)}
+        onLoad={handleLoadProject}
+      />
 
       <Grid container spacing={4} direction="column" alignItems="center">
         <Grid size={{ xs: 12, md: 10, lg: 8 }} sx={{ width: '100%' }}>
@@ -513,22 +622,37 @@ export default function ImageTilesContent() {
               >
                 {image ? (
                   <Box sx={{ position: "relative", width: "100%" }}>
-                    <Tooltip title="Delete image and reset">
-                      <IconButton
-                        size="small"
-                        onClick={handleClearAll}
-                        sx={{
-                          position: "absolute",
-                          top: -10,
-                          right: -10,
-                          bgcolor: "background.paper",
-                          boxShadow: 1,
-                          "&:hover": { bgcolor: "error.light", color: "error.contrastText" },
-                        }}
-                      >
-                        <DeleteRoundedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                    <Stack direction="row" spacing={1} sx={{ position: "absolute", top: -10, right: -10, zIndex: 10 }}>
+                      {user && (
+                        <Tooltip title="Save to Cloud">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => { e.stopPropagation(); handleSaveToCloud(); }}
+                            disabled={saving}
+                            sx={{
+                              bgcolor: "background.paper",
+                              boxShadow: 1,
+                              "&:hover": { bgcolor: "primary.light", color: "primary.contrastText" },
+                            }}
+                          >
+                            {saving ? <CircularProgress size={20} /> : <SaveIcon fontSize="small" color="primary" />}
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      <Tooltip title="Delete image and reset">
+                        <IconButton
+                          size="small"
+                          onClick={handleClearAll}
+                          sx={{
+                            bgcolor: "background.paper",
+                            boxShadow: 1,
+                            "&:hover": { bgcolor: "error.light", color: "error.contrastText" },
+                          }}
+                        >
+                          <DeleteRoundedIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
                     <Box component="img" src={image} alt="Preview" sx={{ maxHeight: 260, objectFit: "contain", width: "100%", borderRadius: 1 }} />
                     <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
                       {imageDimensions.width} × {imageDimensions.height} pixels
@@ -780,6 +904,7 @@ export default function ImageTilesContent() {
                       boxShadow: 3,
                       border: '1px solid',
                       borderColor: 'divider',
+                      fontSize: 0,
                     }}
                   >
                     {tiles.map((tile, index) => (
@@ -789,7 +914,14 @@ export default function ImageTilesContent() {
                           position: 'relative',
                           overflow: 'hidden',
                           '&:hover .tile-actions': { opacity: 1 },
-                          lineHeight: 0 // Prevent extra space for inline images
+                          lineHeight: 0, // Prevent extra space for inline images
+                          // Thin border for clarity
+                          boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.1)',
+                          transition: 'box-shadow 0.2s, z-index 0s',
+                          '&:hover': {
+                            boxShadow: 'inset 0 0 0 2px #3b82f6', // Blue glow on hover
+                            zIndex: 1, // Bring to front
+                          }
                         }}
                       >
                         <img
