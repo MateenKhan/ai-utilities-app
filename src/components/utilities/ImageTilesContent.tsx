@@ -689,32 +689,72 @@ export default function ImageTilesContent() {
                   <Typography variant="body2">No tiles generated yet.</Typography>
                 </Stack>
               ) : (
-                <Grid container spacing={2}>
+                <Grid container spacing={0}>
                   {tiles.map((tile, index) => (
                     <Grid size={{ xs: 6, sm: 4 }} key={index}>
-                      <Paper variant="outlined" sx={{ overflow: "hidden", display: "flex", flexDirection: "column", height: '100%' }}>
-                        <Box component="img" src={tile} alt={`Tile ${index + 1}`} sx={{ width: "100%", height: 120, objectFit: "cover" }} />
-                        <Stack direction="row" spacing={0.5} sx={{ mt: 'auto' }}>
-                          <Button
-                            fullWidth
-                            size="small"
-                            variant="outlined"
-                            startIcon={<VisibilityIcon fontSize="small" />}
-                            onClick={() => handlePrintPreview(tile, index)}
-                            sx={{ minHeight: 44, borderRadius: 0, borderRight: 'none' }}
-                          >
-                            Print
-                          </Button>
-                          <Button
-                            fullWidth
-                            size="small"
-                            variant="outlined"
-                            startIcon={<DownloadRoundedIcon fontSize="small" />}
-                            onClick={() => handleDownloadTile(tile, index)}
-                            sx={{ minHeight: 44, borderRadius: 0 }}
-                          >
-                            Download
-                          </Button>
+                      <Paper
+                        variant="outlined"
+                        sx={{
+                          overflow: "hidden",
+                          display: "flex",
+                          flexDirection: "column",
+                          height: '100%',
+                          position: 'relative',
+                          '&:hover .tile-actions': { opacity: 1 }
+                        }}
+                      >
+                        <Box component="img" src={tile} alt={`Tile ${index + 1}`} sx={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} />
+                        <Stack
+                          className="tile-actions"
+                          direction="row"
+                          spacing={0}
+                          sx={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            bgcolor: 'rgba(255,255,255,0.95)',
+                            backdropFilter: 'blur(2px)',
+                            borderTop: 1,
+                            borderColor: 'divider',
+                            opacity: 0,
+                            transition: 'opacity 0.2s ease-in-out'
+                          }}
+                        >
+                          <Tooltip title="Print Tile">
+                            <Button
+                              fullWidth
+                              size="medium"
+                              variant="text"
+                              onClick={() => handlePrintPreview(tile, index)}
+                              sx={{
+                                minHeight: 40,
+                                borderRadius: 0,
+                                borderRight: 1,
+                                borderColor: 'divider',
+                                color: 'text.secondary',
+                                '&:hover': { color: 'primary.main', bgcolor: 'action.hover' }
+                              }}
+                            >
+                              <PrintIcon />
+                            </Button>
+                          </Tooltip>
+                          <Tooltip title="Download Tile">
+                            <Button
+                              fullWidth
+                              size="medium"
+                              variant="text"
+                              onClick={() => handleDownloadTile(tile, index)}
+                              sx={{
+                                minHeight: 40,
+                                borderRadius: 0,
+                                color: 'text.secondary',
+                                '&:hover': { color: 'primary.main', bgcolor: 'action.hover' }
+                              }}
+                            >
+                              <DownloadRoundedIcon />
+                            </Button>
+                          </Tooltip>
                         </Stack>
                       </Paper>
                     </Grid>

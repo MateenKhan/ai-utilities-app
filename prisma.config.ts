@@ -9,6 +9,8 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // Fallback to a dummy URL during build (when env var is missing)
+    // This allows 'prisma generate' to succeed in the Dockerfile.
+    url: process.env["DATABASE_URL"] || "postgresql://dummy:dummy@localhost:5432/dummy",
   },
 });
