@@ -1,13 +1,18 @@
-"use client";
 
-import dynamic from "next/dynamic";
-import Loading from "@/components/Loading";
+import LazyLoaded from '@/components/utilities/LazyLoaded';
+import dynamic from 'next/dynamic';
+import Loading from '@/components/Loading';
 
-const ImageTilesContent = dynamic(() => import("@/components/utilities/ImageTilesContent"), {
-  loading: () => <Loading />,
-  ssr: false,
+const ImageTilesContent = dynamic(() => import('@/components/utilities/ImageTiles/ImageTilesContent'), {
+    loading: () => <Loading />,
+    ssr: false,
 });
 
 export default function ImageTilesPage() {
-  return <ImageTilesContent />;
+    return (
+        <LazyLoaded>
+            <ImageTilesContent />
+        </LazyLoaded>
+    );
 }
+
