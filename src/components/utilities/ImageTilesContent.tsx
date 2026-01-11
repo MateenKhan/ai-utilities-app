@@ -108,8 +108,8 @@ export default function ImageTilesContent() {
   }, []);
 
   const calculateTileCount = useCallback((
-    imgWidth: number,
-    imgHeight: number,
+    imgWidth: number, // natural pixels
+    imgHeight: number, // natural pixels
     widthInput = tileWidth,
     heightInput = tileHeight,
     imgWidthInput = imageWidth,
@@ -120,27 +120,48 @@ export default function ImageTilesContent() {
       return;
     }
 
-    const tileWidthNum = parseFloat(widthInput);
-    const tileHeightNum = parseFloat(heightInput);
-    const imageWidthNum = parseFloat(imgWidthInput);
-    const imageHeightNum = parseFloat(imgHeightInput);
+    const rawTileWidth = parseFloat(widthInput);
+    const rawTileHeight = parseFloat(heightInput);
+    const rawImageWidth = parseFloat(imgWidthInput);
+    const rawImageHeight = parseFloat(imgHeightInput);
 
-    if ([tileWidthNum, tileHeightNum, imageWidthNum, imageHeightNum].some((value) => !value || value <= 0)) {
+    if ([rawTileWidth, rawTileHeight, rawImageWidth, rawImageHeight].some((v) => !v || v <= 0)) {
       setTileCount({ rows: 0, cols: 0, total: 0 });
       return;
     }
 
-    const pixelsPerUnitX = imgWidth / imageWidthNum;
-    const pixelsPerUnitY = imgHeight / imageHeightNum;
+    // Helper to convert to inches (assuming access to current state units)
+    // Note: The callback usually uses current state for units unless passed as args.
+    // Ideally we should pass units too, but for now we use state `tileUnit` and `imageUnit`
+    // which are in the dependency array below.
+    const toInches = (val: number, unit: string) => (unit === "mm" ? val / 25.4 : val);
 
-    const tileWidthPx = tileWidthNum * pixelsPerUnitX;
-    const tileHeightPx = tileHeightNum * pixelsPerUnitY;
+    const tileW_in = toInches(rawTileWidth, tileUnit);
+    const tileH_in = toInches(rawTileHeight, tileUnit);
+    const imgW_in = toInches(rawImageWidth, imageUnit);
+    const imgH_in = toInches(rawImageHeight, imageUnit);
 
-    const cols = Math.ceil(imgWidth / tileWidthPx);
-    const rows = Math.ceil(imgHeight / tileHeightPx);
+    // Safety check for overlap
+    if (overlap >= tileW_in || overlap >= tileH_in) {
+      // Cannot calculate valid count if overlap consumes the whole tile
+      setTileCount({ rows: 0, cols: 0, total: 0 });
+      return;
+    }
+
+    // 1. Calculate PPI
+    const ppiX = imgWidth / imgW_in;
+    const ppiY = imgHeight / imgH_in;
+
+    // 2. Calculate Step Size (Tile - Overlap)
+    const stepX = (tileW_in - overlap) * ppiX;
+    const stepY = (tileH_in - overlap) * ppiY;
+
+    // 3. Calculate Grid
+    const cols = Math.ceil(imgWidth / stepX);
+    const rows = Math.ceil(imgHeight / stepY);
 
     setTileCount({ rows, cols, total: rows * cols });
-  }, [imageHeight, imageWidth, tileHeight, tileWidth]);
+  }, [tileUnit, imageUnit, overlap, tileWidth, tileHeight, imageWidth, imageHeight]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -231,84 +252,136 @@ export default function ImageTilesContent() {
       return;
     }
 
-    const tileWidthNum = parseFloat(tileWidth);
-    const tileHeightNum = parseFloat(tileHeight);
-    const imageWidthNum = parseFloat(imageWidth);
-    const imageHeightNum = parseFloat(imageHeight);
+    // Convert string inputs to numbers
+    const rawTileWidth = parseFloat(tileWidth);
+    const rawTileHeight = parseFloat(tileHeight);
+    const rawImageWidth = parseFloat(imageWidth);
+    const rawImageHeight = parseFloat(imageHeight);
 
-    if ([tileWidthNum, tileHeightNum, imageWidthNum, imageHeightNum].some((value) => !value || value <= 0)) {
+    if ([rawTileWidth, rawTileHeight, rawImageWidth, rawImageHeight].some((v) => !v || v <= 0)) {
       setError("Use positive numbers for all dimensions");
+      return;
+    }
+
+    // Normalize everything to INCHES
+    const toInches = (val: number, unit: string) => (unit === "mm" ? val / 25.4 : val);
+
+    const tileW_in = toInches(rawTileWidth, tileUnit);
+    const tileH_in = toInches(rawTileHeight, tileUnit);
+    const imgW_in = toInches(rawImageWidth, imageUnit);
+    const imgH_in = toInches(rawImageHeight, imageUnit);
+
+    // Overlap is already in inches
+    const overlap_in = overlap;
+
+    // Safety check: Overlap shouldn't be larger than the tile itself
+    if (overlap_in >= tileW_in || overlap_in >= tileH_in) {
+      setError("Overlap must be smaller than the tile size");
       return;
     }
 
     setError("");
     setProcessing(true);
 
-    const process = (img: HTMLImageElement) => {
-      const pixelsPerUnitX = img.width / imageWidthNum;
-      const pixelsPerUnitY = img.height / imageHeightNum;
-
-      const tileWidthPx = tileWidthNum * pixelsPerUnitX;
-      const tileHeightPx = tileHeightNum * pixelsPerUnitY;
-
-      const cols = Math.ceil(img.width / tileWidthPx);
-      const rows = Math.ceil(img.height / tileHeightPx);
-
-      const newTiles: string[] = [];
-      const canvas = canvasRef.current;
-      if (!canvas) {
-        setProcessing(false);
-        return;
-      }
-
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        setProcessing(false);
-        return;
-      }
-
-      canvas.width = tileWidthPx;
-      canvas.height = tileHeightPx;
-
-      for (let row = 0; row < rows; row += 1) {
-        for (let col = 0; col < cols; col += 1) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = "white";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          const sx = col * tileWidthPx;
-          const sy = row * tileHeightPx;
-          const sw = Math.min(tileWidthPx, img.width - sx);
-          const sh = Math.min(tileHeightPx, img.height - sy);
-
-          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
-          newTiles.push(dataUrl);
-        }
-      }
-
-      setTiles(newTiles);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem("imageTiles", JSON.stringify(newTiles));
-      }
-      setProcessing(false);
-    };
-
-    if (imageFile) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          const img = new Image();
-          img.onload = () => process(img);
-          img.src = event.target.result as string;
-        }
-      };
-      reader.readAsDataURL(imageFile);
-    } else {
+    // Use a small timeout to allow UI to update (show processing state)
+    setTimeout(() => {
       const img = new Image();
-      img.onload = () => process(img);
-      img.src = image;
-    }
+      img.onload = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) {
+          setProcessing(false);
+          return;
+        }
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          setProcessing(false);
+          return;
+        }
+
+        // 1. Calculate PPI (Pixels Per Inch)
+        // We match the image's natural pixels to the target physical size
+        const ppiX = img.naturalWidth / imgW_in;
+        const ppiY = img.naturalHeight / imgH_in;
+
+        // 2. Calculate Tile Size in Pixels (Canvas Size)
+        // The canvas will represent one physical page (e.g., A4)
+        const canvasWidth = tileW_in * ppiX;
+        const canvasHeight = tileH_in * ppiY;
+
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+
+        // 3. Calculate Step Size (how much we move across the source image)
+        // We step by the printable area (Tile Size - Overlap)
+        const stepX = (tileW_in - overlap_in) * ppiX;
+        const stepY = (tileH_in - overlap_in) * ppiY;
+
+        // 4. Calculate Grid
+        const cols = Math.ceil(img.naturalWidth / stepX);
+        const rows = Math.ceil(img.naturalHeight / stepY);
+
+        const newTiles: string[] = [];
+
+        for (let row = 0; row < rows; row++) {
+          for (let col = 0; col < cols; col++) {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Source rectangle (where to take from the original image)
+            const srcX = col * stepX;
+            const srcY = row * stepY;
+
+            // Draw the portion of the image onto the canvas
+            // We draw the full canvas size (including overlap area)
+            ctx.drawImage(
+              img,
+              srcX,
+              srcY,
+              canvasWidth,
+              canvasHeight, // Source size (in source pixels)
+              0,
+              0,
+              canvasWidth,
+              canvasHeight // Destination size (1:1 map)
+            );
+
+            // Add alignment guides (optional but helpful)
+            // Draw simple corner ticks to show where the useful area is (minus overlap)
+            // But for now, let's keep it clean like the reference or add simple border?
+            // The reference implementation had guides. Let's stick to the generated image for now.
+
+            // Export to base64
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
+            newTiles.push(dataUrl);
+          }
+        }
+
+        setTiles(newTiles);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem("imageTiles", JSON.stringify(newTiles));
+        }
+        setProcessing(false);
+      };
+
+      img.onerror = () => {
+        setError("Failed to load image for processing");
+        setProcessing(false);
+      };
+
+      if (imageFile) {
+        // If we have the file object, use FileReader to be safe (or createObjectURL)
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (e.target?.result) img.src = e.target.result as string;
+        };
+        reader.readAsDataURL(imageFile);
+      } else {
+        // Fallback to the stored data URL
+        img.src = image!;
+      }
+    }, 100);
   };
 
   const handleDownloadTile = (dataUrl: string, index: number) => {
