@@ -1,0 +1,48 @@
+name: Docker Build Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: false
+        tags: utilities-app:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        
+    - name: Test Docker image
+      run: |
+        docker run -d -p 9000:9000 \
+          -e DATABASE_URL="postgresql://test:test@localhost:5432/test" \
+          -e JWT_SECRET="test_secret_key_for_ci_testing_only" \
+          -e NEXTAUTH_SECRET="test_nextauth_secret_for_ci_only" \
+          -e NEXTAUTH_URL="http://localhost:9000" \
+          --name utilities-app-test \
+          utilities-app:test
+        
+        # Wait for app to start
+        sleep 10
+        
+        # Test health endpoint
+        curl -f http://localhost:9000/api/health || exit 1
+        
+        # Cleanup
+        docker stop utilities-app-test
+        docker rm utilities-app-test

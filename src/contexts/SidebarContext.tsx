@@ -19,9 +19,11 @@ export const SidebarProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   // Initialize from localStorage if available
   useEffect(() => {
-    const stored = localStorage.getItem('sidebarCollapsed');
-    if (stored) {
-      setIsCollapsed(JSON.parse(stored));
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('sidebarCollapsed');
+      if (stored) {
+        setIsCollapsed(JSON.parse(stored));
+      }
     }
   }, []);
 
@@ -36,12 +38,16 @@ export const SidebarProvider: React.FC<{ children: ReactNode }> = ({ children })
   const toggleCollapse = () => {
     const newState = !isCollapsed;
     setIsCollapsed(newState);
-    localStorage.setItem('sidebarCollapsed', JSON.stringify(newState));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sidebarCollapsed', JSON.stringify(newState));
+    }
   };
 
   const setCollapsed = (collapsed: boolean) => {
     setIsCollapsed(collapsed);
-    localStorage.setItem('sidebarCollapsed', JSON.stringify(collapsed));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sidebarCollapsed', JSON.stringify(collapsed));
+    }
   }
 
   return (

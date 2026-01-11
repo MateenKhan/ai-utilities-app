@@ -11,9 +11,27 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
+  id        Int        @id @default(autoincrement())
+  email     String     @unique
   password  String
   name      String?
-  createdAt DateTime @default(now())
+  createdAt DateTime   @default(now())
+  bookmarks Bookmark[]
+}
+
+model Bookmark {
+  id          Int      @id @default(autoincrement())
+  name        String
+  url         String
+  folder      String?  // Optional folder/category for organization
+  tags        String[] // Array of tags for better categorization
+  description String?  // Optional description
+  favicon     String?  // Optional favicon URL
+  userId      Int      // Foreign key to User
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([folder])
 }

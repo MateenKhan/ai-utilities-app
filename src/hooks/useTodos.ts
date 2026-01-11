@@ -71,6 +71,12 @@ export const useTodos = () => {
 
   // Load todos and states from localStorage
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') {
+      setLoading(false);
+      return;
+    }
+
     const loadData = () => {
       try {
         const savedTodos = localStorage.getItem('todos');
@@ -148,7 +154,7 @@ export const useTodos = () => {
 
   // Save todos and states to localStorage
   useEffect(() => {
-    if (!loading) {
+    if (!loading && typeof window !== 'undefined') {
       try {
         localStorage.setItem('todos', JSON.stringify(todos));
         localStorage.setItem('todoStates', JSON.stringify(states));

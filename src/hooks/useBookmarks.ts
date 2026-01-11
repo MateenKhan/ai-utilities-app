@@ -12,6 +12,12 @@ export const useBookmarks = () => {
 
   // Load bookmarks from localStorage
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') {
+      setLoading(false);
+      return;
+    }
+
     const loadBookmarks = () => {
       try {
         const savedBookmarks = localStorage.getItem('bookmarks');
@@ -60,7 +66,7 @@ export const useBookmarks = () => {
 
   // Save bookmarks to localStorage
   useEffect(() => {
-    if (!loading) {
+    if (!loading && typeof window !== 'undefined') {
       try {
         localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
       } catch (error) {

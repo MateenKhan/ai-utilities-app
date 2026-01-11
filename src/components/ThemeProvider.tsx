@@ -267,8 +267,10 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   // Save themes to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('customThemes', JSON.stringify(themes));
-    localStorage.setItem('currentTheme', JSON.stringify(currentTheme));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('customThemes', JSON.stringify(themes));
+      localStorage.setItem('currentTheme', JSON.stringify(currentTheme));
+    }
   }, [themes, currentTheme]);
 
   // Apply theme to CSS variables

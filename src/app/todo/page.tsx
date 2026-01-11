@@ -3,6 +3,7 @@ import Loading from "@/components/Loading";
 
 const TodoContent = dynamic(() => import("@/components/utilities/TodoContent"), {
   loading: () => <Loading />,
+  ssr: false,
 });
 
 export default function TodoPage() {
