@@ -8,10 +8,10 @@ services:
     container_name: utilities-app
     restart: unless-stopped
     ports:
-      - "9000:9000"
+      - "9005:9005"
     environment:
       - NODE_ENV=production
-      - PORT=9000
+      - PORT=9005
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}

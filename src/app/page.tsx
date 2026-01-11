@@ -20,6 +20,7 @@ import ImageRoundedIcon from "@mui/icons-material/ImageRounded";
 import SaveAltRoundedIcon from "@mui/icons-material/SaveAltRounded";
 
 export default function HomePage() {
+  const [mounted, setMounted] = useState(false);
   const [counts, setCounts] = useState({
     todo: 0,
     bookmarks: 0,
@@ -28,18 +29,22 @@ export default function HomePage() {
   });
 
   useEffect(() => {
-    const todos = JSON.parse(localStorage.getItem("todos") || "[]");
-    const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
-    const history = JSON.parse(localStorage.getItem("calculatorHistory") || "[]");
-    // Image tiles data is stored under 'imageTiles' key
-    const images = JSON.parse(localStorage.getItem("imageTiles") || "[]");
+    setMounted(true);
 
-    setCounts({
-      todo: Array.isArray(todos) ? todos.length : 0,
-      bookmarks: Array.isArray(bookmarks) ? bookmarks.length : 0,
-      history: Array.isArray(history) ? history.length : 0,
-      images: Array.isArray(images) ? images.length : 0,
-    });
+    if (typeof window !== 'undefined') {
+      const todos = JSON.parse(localStorage.getItem("todos") || "[]");
+      const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
+      const history = JSON.parse(localStorage.getItem("calculatorHistory") || "[]");
+      // Image tiles data is stored under 'imageTiles' key
+      const images = JSON.parse(localStorage.getItem("imageTiles") || "[]");
+
+      setCounts({
+        todo: Array.isArray(todos) ? todos.length : 0,
+        bookmarks: Array.isArray(bookmarks) ? bookmarks.length : 0,
+        history: Array.isArray(history) ? history.length : 0,
+        images: Array.isArray(images) ? images.length : 0,
+      });
+    }
   }, []);
 
   const utilities = [
@@ -78,7 +83,7 @@ export default function HomePage() {
                     <Typography variant="subtitle1" textAlign="center" fontWeight={600}>
                       {utility.label}
                     </Typography>
-                    {utility.count !== null && (
+                    {mounted && utility.count !== null && (
                       <Chip
                         label={`${utility.count} ${utility.unit}`}
                         size="small"

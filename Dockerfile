@@ -1,58 +1,61 @@
-# Multi-stage build for Next.js application
-
-# Stage 1: Dependencies
-FROM node:20-alpine AS deps
+# 1. Install dependencies only when needed
+FROM node:18-alpine AS deps
+# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy package files
+# Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
+COPY prisma ./prisma/
+
 RUN npm ci
 
-# Stage 2: Builder
-FROM node:20-alpine AS builder
+# 2. Rebuild the source code only when needed
+FROM node:18-alpine AS builder
 WORKDIR /app
-
-# Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate Prisma Client
+RUN apk add --no-cache openssl
 RUN npx prisma generate
 
-# Disable Next.js telemetry during build
-ENV NEXT_TELEMETRY_DISABLED=1
+# Build Next.js
+# Next.js collects completely anonymous telemetry data about general usage.
+# Learn more here: https://nextjs.org/telemetry
+# Uncomment the following line in case you want to disable telemetry during the build.
+ENV NEXT_TELEMETRY_DISABLED 1
 
-# Build the application
 RUN npm run build
 
-# Stage 3: Runner
-FROM node:20-alpine AS runner
+# 3. Production image, copy all the files and run next
+FROM node:18-alpine AS runner
 WORKDIR /app
 
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=9000
+ENV NODE_ENV production
+# Uncomment the following line in case you want to disable telemetry during runtime.
+# ENV NEXT_TELEMETRY_DISABLED 1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy necessary files from builder
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
 
-# Set correct permissions
-RUN chown -R nextjs:nodejs /app
+COPY --from=builder /app/public ./public
+
+# Automatically leverage output traces to reduce image size
+# https://nextjs.org/docs/advanced-features/output-file-tracing
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
 USER nextjs
 
-EXPOSE 9000
+EXPOSE 9005
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:9000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+ENV PORT 9005
+# set hostname to localhost
+ENV HOSTNAME "0.0.0.0"
 
 CMD ["node", "server.js"]

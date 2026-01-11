@@ -18,6 +18,12 @@ import {
 import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
 import ImageRoundedIcon from "@mui/icons-material/ImageRounded";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import PrintIcon from "@mui/icons-material/Print";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
+import { Slider, IconButton, Tooltip } from "@mui/material";
+import PrintPreviewModal from "./PrintPreviewModal";
+import JSZip from "jszip";
 
 
 type StoredImageState = {
@@ -62,22 +68,44 @@ const loadStoredTiles = (): string[] => {
 };
 
 export default function ImageTilesContent() {
-  const initialState = useMemo(() => loadStoredImageState(), []);
-  const [image, setImage] = useState<string | null>(initialState.imageData ?? null);
+  const [mounted, setMounted] = useState(false);
+  const [image, setImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
-  const [tiles, setTiles] = useState<string[]>(loadStoredTiles);
-  const [tileWidth, setTileWidth] = useState(initialState.tileWidth ?? "210");
-  const [tileHeight, setTileHeight] = useState(initialState.tileHeight ?? "297");
-  const [tileUnit, setTileUnit] = useState(initialState.tileUnit ?? "mm");
-  const [imageWidth, setImageWidth] = useState(initialState.imageWidth ?? "");
-  const [imageHeight, setImageHeight] = useState(initialState.imageHeight ?? "");
-  const [imageUnit, setImageUnit] = useState(initialState.imageUnit ?? "mm");
+  const [tiles, setTiles] = useState<string[]>([]);
+  const [tileWidth, setTileWidth] = useState("210");
+  const [tileHeight, setTileHeight] = useState("297");
+  const [tileUnit, setTileUnit] = useState("mm");
+  const [imageWidth, setImageWidth] = useState("");
+  const [imageHeight, setImageHeight] = useState("");
+  const [imageUnit, setImageUnit] = useState("mm");
+  const [overlap, setOverlap] = useState(0.25); // Overlap in inches for print alignment
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
   const [tileCount, setTileCount] = useState({ rows: 0, cols: 0, total: 0 });
+  const [printPreviewOpen, setPrintPreviewOpen] = useState(false);
+  const [selectedTile, setSelectedTile] = useState<{ data: string; index: number; row: number; col: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Load data from localStorage after mount
+  useEffect(() => {
+    setMounted(true);
+
+    if (typeof window !== 'undefined') {
+      const initialState = loadStoredImageState();
+      const storedTiles = loadStoredTiles();
+
+      if (initialState.imageData) setImage(initialState.imageData);
+      if (initialState.tileWidth) setTileWidth(initialState.tileWidth);
+      if (initialState.tileHeight) setTileHeight(initialState.tileHeight);
+      if (initialState.tileUnit) setTileUnit(initialState.tileUnit);
+      if (initialState.imageWidth) setImageWidth(initialState.imageWidth);
+      if (initialState.imageHeight) setImageHeight(initialState.imageHeight);
+      if (initialState.imageUnit) setImageUnit(initialState.imageUnit);
+      if (storedTiles.length > 0) setTiles(storedTiles);
+    }
+  }, []);
 
   const calculateTileCount = useCallback((
     imgWidth: number,
@@ -115,17 +143,19 @@ export default function ImageTilesContent() {
   }, [imageHeight, imageWidth, tileHeight, tileWidth]);
 
   useEffect(() => {
-    const state = {
-      tileWidth,
-      tileHeight,
-      tileUnit,
-      imageWidth,
-      imageHeight,
-      imageUnit,
-      imageData: image,
-      imageFileName: imageFile?.name || null,
-    };
-    localStorage.setItem("imageTilesState", JSON.stringify(state));
+    if (typeof window !== 'undefined') {
+      const state = {
+        tileWidth,
+        tileHeight,
+        tileUnit,
+        imageWidth,
+        imageHeight,
+        imageUnit,
+        imageData: image,
+        imageFileName: imageFile?.name || null,
+      };
+      localStorage.setItem("imageTilesState", JSON.stringify(state));
+    }
   }, [tileWidth, tileHeight, tileUnit, imageWidth, imageHeight, imageUnit, image, imageFile]);
 
   useEffect(() => {
@@ -258,7 +288,9 @@ export default function ImageTilesContent() {
       }
 
       setTiles(newTiles);
-      localStorage.setItem("imageTiles", JSON.stringify(newTiles));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem("imageTiles", JSON.stringify(newTiles));
+      }
       setProcessing(false);
     };
 
@@ -293,6 +325,65 @@ export default function ImageTilesContent() {
       setTimeout(() => handleDownloadTile(tile, index), index * 100);
     });
   };
+
+  const handleDownloadAllAsZip = async () => {
+    const zip = new JSZip();
+
+    // Add each tile to the ZIP
+    tiles.forEach((tile, index) => {
+      // Convert base64 to blob
+      const base64Data = tile.split(',')[1];
+      zip.file(`tile-${index + 1}.jpg`, base64Data, { base64: true });
+    });
+
+    // Generate and download the ZIP
+    const blob = await zip.generateAsync({ type: "blob" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "image-tiles.zip";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handlePrintPreview = (tileData: string, index: number) => {
+    const row = Math.floor(index / tileCount.cols);
+    const col = index % tileCount.cols;
+    setSelectedTile({ data: tileData, index, row, col });
+    setPrintPreviewOpen(true);
+  };
+
+  const handleClosePrintPreview = () => {
+    setPrintPreviewOpen(false);
+    setSelectedTile(null);
+  };
+
+  const handleClearAll = (e?: React.MouseEvent) => {
+    e?.stopPropagation(); // Prevent triggering the file input click
+    setImage(null);
+    setImageFile(null);
+    setImageDimensions({ width: 0, height: 0 });
+    setTiles([]);
+    setTileWidth("210");
+    setTileHeight("297");
+    setTileUnit("mm");
+    setImageWidth("");
+    setImageHeight("");
+    setImageUnit("mm");
+    setOverlap(0.25);
+    setTileCount({ rows: 0, cols: 0, total: 0 });
+    setError("");
+    // Clear localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem("imageTilesState");
+      localStorage.removeItem("imageTiles");
+    }
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
 
   return (
     <Box>
@@ -329,9 +420,25 @@ export default function ImageTilesContent() {
                 onClick={() => fileInputRef.current?.click()}
               >
                 {image ? (
-                  <Box>
-                    <Box component="img" src={image} alt="Preview" sx={{ maxHeight: 260, objectFit: "contain", width: "100%" }} />
-                    <Typography variant="caption" color="text.secondary">
+                  <Box sx={{ position: "relative", width: "100%" }}>
+                    <Tooltip title="Delete image and reset">
+                      <IconButton
+                        size="small"
+                        onClick={handleClearAll}
+                        sx={{
+                          position: "absolute",
+                          top: -10,
+                          right: -10,
+                          bgcolor: "background.paper",
+                          boxShadow: 1,
+                          "&:hover": { bgcolor: "error.light", color: "error.contrastText" },
+                        }}
+                      >
+                        <DeleteRoundedIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Box component="img" src={image} alt="Preview" sx={{ maxHeight: 260, objectFit: "contain", width: "100%", borderRadius: 1 }} />
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
                       {imageDimensions.width} × {imageDimensions.height} pixels
                     </Typography>
                   </Box>
@@ -428,6 +535,36 @@ export default function ImageTilesContent() {
                 </ToggleButtonGroup>
               </Box>
 
+              <Box mt={3}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Overlap (for print alignment)
+                </Typography>
+                <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+                  Add bleed area to help align and tape printed pages together
+                </Typography>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Slider
+                    value={overlap}
+                    onChange={(_e, value) => setOverlap(value as number)}
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    marks={[
+                      { value: 0, label: '0"' },
+                      { value: 0.25, label: '0.25"' },
+                      { value: 0.5, label: '0.5"' },
+                      { value: 1, label: '1"' },
+                    ]}
+                    valueLabelDisplay="auto"
+                    valueLabelFormat={(value) => `${value}"`}
+                    sx={{ flexGrow: 1 }}
+                  />
+                  <Typography variant="body2" sx={{ minWidth: 60 }}>
+                    {overlap}"
+                  </Typography>
+                </Stack>
+              </Box>
+
               {tileCount.total > 0 && (
                 <Paper variant="outlined" sx={{ mt: 2, p: 2 }}>
                   <Typography>
@@ -459,12 +596,17 @@ export default function ImageTilesContent() {
         <Grid size={{ xs: 12, lg: 6 }}>
           <Card>
             <CardContent>
-              <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ sm: "center" }} mb={2}>
+              <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ sm: "center" }} mb={2} spacing={1}>
                 <Typography variant="h6">Generated Tiles</Typography>
                 {tiles.length > 0 && (
-                  <Button startIcon={<DownloadRoundedIcon />} onClick={handleDownloadAll} variant="outlined">
-                    Download All
-                  </Button>
+                  <Stack direction="row" spacing={1}>
+                    <Button startIcon={<DownloadRoundedIcon />} onClick={handleDownloadAll} variant="outlined" size="small">
+                      Download All
+                    </Button>
+                    <Button startIcon={<DownloadRoundedIcon />} onClick={handleDownloadAllAsZip} variant="contained" size="small">
+                      Download ZIP
+                    </Button>
+                  </Stack>
                 )}
               </Stack>
 
@@ -479,16 +621,28 @@ export default function ImageTilesContent() {
                     <Grid size={{ xs: 6, sm: 4 }} key={index}>
                       <Paper variant="outlined" sx={{ overflow: "hidden", display: "flex", flexDirection: "column", height: '100%' }}>
                         <Box component="img" src={tile} alt={`Tile ${index + 1}`} sx={{ width: "100%", height: 120, objectFit: "cover" }} />
-                        <Button
-                          fullWidth
-                          size="small"
-                          variant="outlined"
-                          startIcon={<DownloadRoundedIcon fontSize="small" />}
-                          onClick={() => handleDownloadTile(tile, index)}
-                          sx={{ mt: 'auto', minHeight: 44, borderRadius: 0 }}
-                        >
-                          Tile {index + 1}
-                        </Button>
+                        <Stack direction="row" spacing={0.5} sx={{ mt: 'auto' }}>
+                          <Button
+                            fullWidth
+                            size="small"
+                            variant="outlined"
+                            startIcon={<VisibilityIcon fontSize="small" />}
+                            onClick={() => handlePrintPreview(tile, index)}
+                            sx={{ minHeight: 44, borderRadius: 0, borderRight: 'none' }}
+                          >
+                            Print
+                          </Button>
+                          <Button
+                            fullWidth
+                            size="small"
+                            variant="outlined"
+                            startIcon={<DownloadRoundedIcon fontSize="small" />}
+                            onClick={() => handleDownloadTile(tile, index)}
+                            sx={{ minHeight: 44, borderRadius: 0 }}
+                          >
+                            Download
+                          </Button>
+                        </Stack>
                       </Paper>
                     </Grid>
                   ))}
@@ -500,6 +654,17 @@ export default function ImageTilesContent() {
       </Grid>
 
       <canvas ref={canvasRef} hidden />
+
+      {selectedTile && (
+        <PrintPreviewModal
+          open={printPreviewOpen}
+          onClose={handleClosePrintPreview}
+          tileData={selectedTile.data}
+          tileIndex={selectedTile.index}
+          gridPosition={{ row: selectedTile.row, col: selectedTile.col }}
+          totalTiles={tileCount}
+        />
+      )}
     </Box>
   );
 }
