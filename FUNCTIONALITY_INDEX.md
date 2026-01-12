@@ -13,6 +13,7 @@ This document provides an index of all major functionalities in the application,
 *   **Database**: Manages the database connection and schema.
     *   [Prisma Client](src/lib/prisma.ts)
     *   [Prisma Schema](prisma/schema.prisma)
+    *   [MinIO Storage Library](src/lib/minio.ts)
 *   **Application Layout**: Defines the main application layout and global components.
     *   [Root Layout](src/app/layout.tsx)
     *   [App Layout Component](src/components/AppLayout.tsx)

@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     }
 
     const { clientId, clientSecret } = getAmazonConfig();
-    const redirectUri = 'http://localhost:3000/api/amazon/callback';
+    const redirectUri = `${process.env.NEXTAUTH_URL || 'https://utility.jugaaadi.com'}/api/amazon/callback`;
 
     try {
         const tokenResponse = await fetch('https://api.amazon.com/auth/o2/token', {
@@ -40,7 +40,7 @@ export async function GET(request: Request) {
         await fs.writeFile(tokenPath, JSON.stringify(tokens, null, 2));
 
         // Redirect to app with success
-        return NextResponse.redirect('http://localhost:3000/todo?amazon_connected=true');
+        return NextResponse.redirect(`${process.env.NEXTAUTH_URL || 'https://utility.jugaaadi.com'}/todo?amazon_connected=true`);
 
     } catch (error: any) {
         console.error('Token Exchange Error:', error);

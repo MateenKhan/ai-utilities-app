@@ -8,7 +8,7 @@ export async function GET() {
         return NextResponse.json({ error: 'Missing Client ID. Please configure credentials in settings.' }, { status: 500 });
     }
 
-    const redirectUri = 'http://localhost:3000/api/amazon/callback';
+    const redirectUri = `${process.env.NEXTAUTH_URL || 'https://utility.jugaaadi.com'}/api/amazon/callback`;
     const scope = 'sellingpartnerapi::notifications sellingpartnerapi::migration'; // Standard scopes, adjust if needed
     // Note: For Orders API, 'sellingpartnerapi::notifications' might not be strictly required but 'sellingpartnerapi::migration' is common. 
     // Actually, for SP-API, we don't pass 'scope' in the auth URL for the *Seller* flow usually, strictly speaking, 

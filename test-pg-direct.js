@@ -6,7 +6,10 @@ async function main() {
     let dbUrl = '';
     try {
         const envContent = fs.readFileSync(path.resolve(__dirname, '.env'), 'utf8');
-        dbUrl = envContent.match(/DATABASE_URL=["']?([^"'\n]+)["']?/)[1].trim();
+        dbUrl = envContent.split('\n')
+            .map(line => line.trim())
+            .find(line => line.startsWith('DATABASE_URL=') && !line.startsWith('#'))
+            .match(/DATABASE_URL=["']?([^"'\n]+)["']?/)[1].trim();
     } catch (e) {
         console.error('Error reading .env');
         return;
