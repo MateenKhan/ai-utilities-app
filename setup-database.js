@@ -1,8 +1,14 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
-// Use the DATABASE_URL from environment or default
-const databaseUrl = process.env.DATABASE_URL || 'postgresql://utility_user:utility_2026@localhost:5432/utility_db';
+// Use the DATABASE_URL from environment
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+    console.error('❌ ERROR: DATABASE_URL environment variable is not set.');
+    console.error('Please check your .env file.');
+    process.exit(1);
+}
 
 console.log('🔗 Connecting to database...');
 console.log('Database URL:', databaseUrl.replace(/:[^:@]+@/, ':****@')); // Hide password

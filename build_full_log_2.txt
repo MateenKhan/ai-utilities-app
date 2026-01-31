@@ -1,0 +1,337 @@
+﻿
+> utilities-app@0.1.0 build
+> next build
+
+   ▲ Next.js 16.0.7 (Turbopack)
+   - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 6.1s
+   Running TypeScript ...
+   Collecting page data using 19 workers ...
+node.exe : Error 
+[PrismaClientConstructorValidationError]: Unknown 
+property datasourceUrl provided to PrismaClient 
+constructor.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error  
+   [PrismaCl...nt constructor.:String) [], RemoteE  
+  xception
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Read more at https://pris.ly/d/client-constructor
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__c9
+cc35fe._.js:1:246)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at getOrInstantiateModuleFromParent (F:\code\ai\
+utilites\utilities-app\.next\server\chunks\[turbopac
+k]_runtime.js:738:12)
+    at Context.esmImport [as i] (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:228:20)
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__ba
+e6b075._.js:1:1463)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at instantiateRuntimeModule (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:743:12)
+    at getOrInstantiateRuntimeModule (F:\code\ai\uti
+lites\utilities-app\.next\server\chunks\[turbopack]_
+runtime.js:756:12)
+Error [PrismaClientConstructorValidationError]: 
+Unknown property datasourceUrl provided to 
+PrismaClient constructor.
+Read more at https://pris.ly/d/client-constructor
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__0c
+c370ce._.js:1:246)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at getOrInstantiateModuleFromParent (F:\code\ai\
+utilites\utilities-app\.next\server\chunks\[turbopac
+k]_runtime.js:738:12)
+    at Context.esmImport [as i] (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:228:20)
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__b9
+a68254._.js:1:1463)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at instantiateRuntimeModule (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:743:12)
+    at getOrInstantiateRuntimeModule (F:\code\ai\uti
+lites\utilities-app\.next\server\chunks\[turbopack]_
+runtime.js:756:12)
+Error [PrismaClientConstructorValidationError]: 
+Unknown property datasourceUrl provided to 
+PrismaClient constructor.
+Read more at https://pris.ly/d/client-constructor
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__c9
+cc35fe._.js:1:246)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at getOrInstantiateModuleFromParent (F:\code\ai\
+utilites\utilities-app\.next\server\chunks\[turbopac
+k]_runtime.js:738:12)
+    at Context.esmImport [as i] (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:228:20)
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__df
+2d6d53._.js:1:1463)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at instantiateRuntimeModule (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:743:12)
+    at getOrInstantiateRuntimeModule (F:\code\ai\uti
+lites\utilities-app\.next\server\chunks\[turbopack]_
+runtime.js:756:12)
+Error [PrismaClientConstructorValidationError]: 
+Unknown property datasourceUrl provided to 
+PrismaClient constructor.
+Read more at https://pris.ly/d/client-constructor
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__c9
+cc35fe._.js:1:246)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at getOrInstantiateModuleFromParent (F:\code\ai\
+utilites\utilities-app\.next\server\chunks\[turbopac
+k]_runtime.js:738:12)
+    at Context.esmImport [as i] (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:228:20)
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__29
+13525f._.js:1:1463)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at instantiateRuntimeModule (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:743:12)
+    at getOrInstantiateRuntimeModule (F:\code\ai\uti
+lites\utilities-app\.next\server\chunks\[turbopack]_
+runtime.js:756:12)
+Error [PrismaClientConstructorValidationError]: 
+Unknown property datasourceUrl provided to 
+PrismaClient constructor.
+Read more at https://pris.ly/d/client-constructor
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__c9
+cc35fe._.js:1:246)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at getOrInstantiateModuleFromParent (F:\code\ai\
+utilites\utilities-app\.next\server\chunks\[turbopac
+k]_runtime.js:738:12)
+    at Context.esmImport [as i] (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:228:20)
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__54
+aec1ac._.js:1:1462)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at instantiateRuntimeModule (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:743:12)
+    at getOrInstantiateRuntimeModule (F:\code\ai\uti
+lites\utilities-app\.next\server\chunks\[turbopack]_
+runtime.js:756:12)
+Error [PrismaClientConstructorValidationError]: 
+Unknown property datasourceUrl provided to 
+PrismaClient constructor.
+Read more at https://pris.ly/d/client-constructor
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__c9
+cc35fe._.js:1:246)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at getOrInstantiateModuleFromParent (F:\code\ai\
+utilites\utilities-app\.next\server\chunks\[turbopac
+k]_runtime.js:738:12)
+    at Context.esmImport [as i] (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:228:20)
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__d2
+672a84._.js:1:1463)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at instantiateRuntimeModule (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:743:12)
+    at getOrInstantiateRuntimeModule (F:\code\ai\uti
+lites\utilities-app\.next\server\chunks\[turbopack]_
+runtime.js:756:12)
+Error [PrismaClientConstructorValidationError]: 
+Unknown property datasourceUrl provided to 
+PrismaClient constructor.
+Read more at https://pris.ly/d/client-constructor
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__c9
+cc35fe._.js:1:246)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at getOrInstantiateModuleFromParent (F:\code\ai\
+utilites\utilities-app\.next\server\chunks\[turbopac
+k]_runtime.js:738:12)
+    at Context.esmImport [as i] (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:228:20)
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__be
+99f824._.js:1:1462)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at instantiateRuntimeModule (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:743:12)
+    at getOrInstantiateRuntimeModule (F:\code\ai\uti
+lites\utilities-app\.next\server\chunks\[turbopack]_
+runtime.js:756:12)
+Error [PrismaClientConstructorValidationError]: 
+Unknown property datasourceUrl provided to 
+PrismaClient constructor.
+Read more at https://pris.ly/d/client-constructor
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__c9
+cc35fe._.js:1:246)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at getOrInstantiateModuleFromParent (F:\code\ai\
+utilites\utilities-app\.next\server\chunks\[turbopac
+k]_runtime.js:738:12)
+    at Context.esmImport [as i] (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:228:20)
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__1a
+d9190e._.js:1:1462)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at instantiateRuntimeModule (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:743:12)
+    at getOrInstantiateRuntimeModule (F:\code\ai\uti
+lites\utilities-app\.next\server\chunks\[turbopack]_
+runtime.js:756:12)
+Error [PrismaClientConstructorValidationError]: 
+Unknown property datasourceUrl provided to 
+PrismaClient constructor.
+Read more at https://pris.ly/d/client-constructor
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__c9
+cc35fe._.js:1:246)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at getOrInstantiateModuleFromParent (F:\code\ai\
+utilites\utilities-app\.next\server\chunks\[turbopac
+k]_runtime.js:738:12)
+    at Context.esmImport [as i] (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:228:20)
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__97
+bc13ed._.js:1:1640)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at instantiateRuntimeModule (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:743:12)
+    at getOrInstantiateRuntimeModule (F:\code\ai\uti
+lites\utilities-app\.next\server\chunks\[turbopack]_
+runtime.js:756:12)
+Error [PrismaClientConstructorValidationError]: 
+Unknown property datasourceUrl provided to 
+PrismaClient constructor.
+Read more at https://pris.ly/d/client-constructor
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__c9
+cc35fe._.js:1:246)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at getOrInstantiateModuleFromParent (F:\code\ai\
+utilites\utilities-app\.next\server\chunks\[turbopac
+k]_runtime.js:738:12)
+    at Context.esmImport [as i] (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:228:20)
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__f5
+d3f279._.js:1:1463)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at instantiateRuntimeModule (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:743:12)
+    at getOrInstantiateRuntimeModule (F:\code\ai\uti
+lites\utilities-app\.next\server\chunks\[turbopack]_
+runtime.js:756:12)
+Error [PrismaClientConstructorValidationError]: 
+Unknown property datasourceUrl provided to 
+PrismaClient constructor.
+Read more at https://pris.ly/d/client-constructor
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__c9
+cc35fe._.js:1:246)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at getOrInstantiateModuleFromParent (F:\code\ai\
+utilites\utilities-app\.next\server\chunks\[turbopac
+k]_runtime.js:738:12)
+    at Context.esmImport [as i] (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:228:20)
+    at module evaluation (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[root-of-the-server]__6a
+743f0e._.js:1:1640)
+    at instantiateModule (F:\code\ai\utilites\utilit
+ies-app\.next\server\chunks\[turbopack]_runtime.js:7
+15:9)
+    at instantiateRuntimeModule (F:\code\ai\utilites
+\utilities-app\.next\server\chunks\[turbopack]_runti
+me.js:743:12)
+    at getOrInstantiateRuntimeModule (F:\code\ai\uti
+lites\utilities-app\.next\server\chunks\[turbopack]_
+runtime.js:756:12)
+
+> Build error occurred
+Error: Failed to collect page data for 
+/api/auth/signup
+    at ignore-listed frames {
+  type: 'Error'
+}

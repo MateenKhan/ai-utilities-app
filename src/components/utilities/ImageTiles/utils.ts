@@ -1,4 +1,5 @@
-export const toInches = (value: number, unit: 'mm' | 'inches'): number => {
+// Utility to convert physical units to inches
+const toInches = (value: number, unit: 'mm' | 'inches'): number => {
     return unit === 'mm' ? value / 25.4 : value;
 };
 
@@ -14,62 +15,73 @@ export const generateTiles = (
 ): { id: string; dataUrl: string }[] => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    if (!ctx) {
-        return [];
-    }
+    if (!ctx) return [];
 
+    // 1. Convert everything to inches for consistent math
     const tileW_in = toInches(tileWidth, tileUnit);
     const tileH_in = toInches(tileHeight, tileUnit);
     const imgW_in = toInches(imageWidth, imageUnit);
     const imgH_in = toInches(imageHeight, imageUnit);
-    const overlap_in = overlap;
 
-    if (overlap_in >= tileW_in || overlap_in >= tileH_in) {
-        return [];
-    }
+    // Safety check
+    if (imgW_in <= 0 || imgH_in <= 0 || tileW_in <= 0 || tileH_in <= 0) return [];
 
+    // 2. Calculate PPI (Pixels Per Inch) based on physical image size
+    // Note: Use naturalWidth to get the original source pixels
     const ppiX = image.naturalWidth / imgW_in;
     const ppiY = image.naturalHeight / imgH_in;
 
-    const canvasWidth = tileW_in * ppiX;
-    const canvasHeight = tileH_in * ppiY;
+    // 3. Calculate tile dimensions in source pixels
+    const tileW_px = tileW_in * ppiX;
+    const tileH_px = tileH_in * ppiY;
+    const overlap_px = overlap * Math.min(ppiX, ppiY); // overlap assumed to be in physical units (e.g. inches or mm)
 
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
+    // Set canvas to tile pixel size
+    canvas.width = tileW_px;
+    canvas.height = tileH_px;
 
-    const stepX = (tileW_in - overlap_in) * ppiX;
-    const stepY = (tileH_in - overlap_in) * ppiY;
+    // 4. Calculate steps (accounting for overlap)
+    const stepX = tileW_px - overlap_px;
+    const stepY = tileH_px - overlap_px;
 
+    if (stepX <= 0 || stepY <= 0) return [];
+
+    // 5. Calculate how many tiles we need
     const cols = Math.ceil(image.naturalWidth / stepX);
     const rows = Math.ceil(image.naturalHeight / stepY);
 
-    const newTiles: { id: string; dataUrl: string }[] = [];
+    const tiles: { id: string; dataUrl: string }[] = [];
 
-    for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            const srcX = col * stepX;
-            const srcY = row * stepY;
+            const srcX = c * stepX;
+            const srcY = r * stepY;
 
+            // Draw portion of image to canvas
             ctx.drawImage(
                 image,
                 srcX,
                 srcY,
-                canvasWidth,
-                canvasHeight,
+                tileW_px,
+                tileH_px,
                 0,
                 0,
-                canvasWidth,
-                canvasHeight
+                tileW_px,
+                tileH_px
             );
 
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-            newTiles.push({ id: `${row}-${col}`, dataUrl });
+            tiles.push({
+                id: `${r}-${c}`,
+                dataUrl: canvas.toDataURL('image/jpeg', 0.9)
+            });
         }
     }
 
-    return newTiles;
+    return tiles;
 };
+
+export { toInches };

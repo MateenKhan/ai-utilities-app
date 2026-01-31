@@ -1,3 +1,4 @@
+"use client";
 
 import React, { useRef } from 'react';
 import { Paper, Typography, Stack } from '@mui/material';

@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { verify } from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 
+export const dynamic = 'force-dynamic';
+
 // Helper function to get user from token
 async function getUserFromToken(request: NextRequest) {
     const cookieStore = await cookies();

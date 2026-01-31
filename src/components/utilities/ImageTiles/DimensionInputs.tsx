@@ -1,3 +1,4 @@
+"use client";
 
 import React from 'react';
 import { TextField, Grid, InputAdornment, Select, MenuItem, Typography, Stack, Button } from '@mui/material';
@@ -46,7 +47,7 @@ const DimensionInputs: React.FC<Props> = ({ state, dispatch }) => {
                 Physical Image Size
             </Typography>
             <Grid container spacing={2}>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                     <TextField
                         label="Width"
                         type="number"
@@ -71,7 +72,7 @@ const DimensionInputs: React.FC<Props> = ({ state, dispatch }) => {
                         }}
                     />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                     <TextField
                         label="Height"
                         type="number"
@@ -113,7 +114,7 @@ const DimensionInputs: React.FC<Props> = ({ state, dispatch }) => {
                 </Button>
             </Stack>
             <Grid container spacing={2}>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                     <TextField
                         label="Width"
                         type="number"
@@ -138,7 +139,7 @@ const DimensionInputs: React.FC<Props> = ({ state, dispatch }) => {
                         }}
                     />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                     <TextField
                         label="Height"
                         type="number"

@@ -36,7 +36,9 @@ async function main() {
 
         // Ensure schema exists and set search path
         console.log('0️⃣ Setting up schema "utility_schema"...');
-        await client.query('CREATE SCHEMA IF NOT EXISTS utility_schema AUTHORIZATION utility_user');
+        // Extract username from connection string to use in AUTHORIZATION
+        const dbUser = new URL(connectionString).username;
+        await client.query(`CREATE SCHEMA IF NOT EXISTS utility_schema AUTHORIZATION ${dbUser}`);
         await client.query('SET search_path TO utility_schema');
 
         await client.query(`

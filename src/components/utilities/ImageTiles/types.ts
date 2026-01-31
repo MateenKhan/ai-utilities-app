@@ -1,3 +1,8 @@
+export interface Tile {
+    id: string;
+    dataUrl: string;
+}
+
 export interface State {
     image: File | null;
     imageSrc: string | null;
@@ -10,7 +15,7 @@ export interface State {
     overlap: number;
     processing: boolean;
     error: string | null;
-    tiles: { id: string; dataUrl: string }[];
+    tiles: Tile[];
 }
 
 export type Action =

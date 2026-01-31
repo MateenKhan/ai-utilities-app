@@ -7,14 +7,15 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["public", "utility_schema"]
 }
 
 model User {
-  id        Int        @id @default(autoincrement())
-  email     String     @unique
-  password  String
-  name      String?
-  createdAt DateTime   @default(now())
+  id                Int                 @id @default(autoincrement())
+  email             String              @unique
+  password          String
+  name              String?
+  createdAt         DateTime            @default(now())
   bookmarks         Bookmark[]
   todos             Todo[]
   todoStates        TodoState[]
@@ -22,6 +23,8 @@ model User {
   calculatorState   CalculatorState?
   imageTileProjects ImageTileProject[]
   savedImages       SavedImage[]
+
+  @@schema("utility_schema")
 }
 
 model Bookmark {
@@ -39,6 +42,7 @@ model Bookmark {
 
   @@index([userId])
   @@index([folder])
+  @@schema("utility_schema")
 }
 
 model Todo {
@@ -53,6 +57,7 @@ model Todo {
   updatedAt   DateTime @updatedAt
 
   @@index([userId])
+  @@schema("utility_schema")
 }
 
 model TodoState {
@@ -63,6 +68,7 @@ model TodoState {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, value])
+  @@schema("utility_schema")
 }
 
 model CalculatorHistory {
@@ -75,6 +81,7 @@ model CalculatorHistory {
 
   @@index([userId])
   @@index([timestamp(sort: Desc)])
+  @@schema("utility_schema")
 }
 
 model CalculatorState {
@@ -82,6 +89,8 @@ model CalculatorState {
   data   Json   // Stores display, memory, activeView, etc.
   userId Int    @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@schema("utility_schema")
 }
 
 model ImageTileProject {
@@ -94,6 +103,7 @@ model ImageTileProject {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@schema("utility_schema")
 }
 
 model SavedImage {
@@ -107,4 +117,22 @@ model SavedImage {
   createdAt   DateTime @default(now())
 
   @@index([userId])
+  @@schema("utility_schema")
+}
+
+model Employee {
+  id         String   @id @default(uuid())
+  firstName  String
+  lastName   String
+  email      String   @unique
+  phone      String?
+  position   String?
+  department String?
+  salary     Float?
+  imageUrl   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([email])
+  @@schema("utility_schema")
 }

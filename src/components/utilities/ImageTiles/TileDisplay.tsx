@@ -1,3 +1,4 @@
+"use client";
 
 import React from 'react';
 import { Box, Typography, Button, Tooltip, Stack } from '@mui/material';
@@ -5,6 +6,8 @@ import { useDrop, useDrag } from 'react-dnd';
 import PrintIcon from '@mui/icons-material/Print';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import { State, Action, Tile } from './types';
+
+import { toInches } from './utils';
 
 interface DraggableTileProps {
     tile: Tile;
@@ -122,7 +125,7 @@ interface Props {
 }
 
 const TileDisplay: React.FC<Props> = ({ state, dispatch }) => {
-    if (!state.imageSrc) {
+    if (!state.imageSrc || state.tiles.length === 0) {
         return (
             <Typography color="text.secondary" align="center">
                 Upload an image and generate tiles to see a preview.
@@ -130,17 +133,16 @@ const TileDisplay: React.FC<Props> = ({ state, dispatch }) => {
         );
     }
 
-    const gridTemplateColumns = state.image
-        ? `repeat(${Math.ceil(
-              state.image.width / parseFloat(state.tileWidth)
-          )}, 1fr)`
-        : '1fr';
+    const imgW_in = toInches(parseFloat(state.imageWidth) || 0, state.imageUnit);
+    const tileW_in = toInches(parseFloat(state.tileWidth) || 1, state.tileUnit);
+    const stepW_in = tileW_in - state.overlap;
+    const cols = stepW_in > 0 ? Math.ceil(imgW_in / stepW_in) : 1;
 
     return (
         <Box
             sx={{
                 display: 'grid',
-                gridTemplateColumns,
+                gridTemplateColumns: `repeat(${cols}, 1fr)`,
                 gap: 0,
                 width: '100%',
                 maxWidth: '100%',

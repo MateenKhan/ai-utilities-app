@@ -3,7 +3,7 @@ import * as Minio from 'minio';
 const minioClient = new Minio.Client({
     endPoint: process.env.MINIO_ENDPOINT || 'localhost',
     port: parseInt(process.env.MINIO_PORT || '9000'),
-    useSSL: process.env.MINIO_USE_SSL === 'true', // ensure .env has this if needed, or default false
+    useSSL: process.env.MINIO_USE_SSL === 'true',
     accessKey: process.env.MINIO_ACCESS_KEY || '',
     secretKey: process.env.MINIO_SECRET_KEY || '',
 });
@@ -18,7 +18,6 @@ export const uploadFile = async (buffer: Buffer, filename: string, contentType: 
         }
     } catch (err) {
         console.error('Error checking/creating bucket', err);
-        // Might fail if permissions restricted, assume bucket might exist
     }
 
     await minioClient.putObject(BUCKET_NAME, filename, buffer, buffer.length, {
@@ -29,7 +28,6 @@ export const uploadFile = async (buffer: Buffer, filename: string, contentType: 
 };
 
 export const getFileUrl = async (filename: string) => {
-    // Generate presigned URL for GET (valid for 7 days ideally or just 1 hour)
     try {
         return await minioClient.presignedGetObject(BUCKET_NAME, filename, 24 * 60 * 60);
     } catch (error) {

@@ -1,6 +1,7 @@
+"use client";
 
 import React from 'react';
-import { Button } from '@mui/material';
+import { Button, Typography, Stack } from '@mui/material';
 import ImageRoundedIcon from '@mui/icons-material/ImageRounded';
 import { State, Action } from './types';
 
@@ -12,16 +13,23 @@ interface Props {
 
 const TileGeneration: React.FC<Props> = ({ state, onGenerateTiles }) => {
     return (
-        <Button
-            variant="contained"
-            fullWidth
-            sx={{ mt: 3, minHeight: 48 }}
-            onClick={onGenerateTiles}
-            disabled={state.processing || !state.image}
-            startIcon={<ImageRoundedIcon />}
-        >
-            {state.processing ? 'Processing...' : 'Generate Tiles'}
-        </Button>
+        <Stack spacing={2} sx={{ mt: 3 }}>
+            {state.error && (
+                <Typography color="error" variant="caption" align="center">
+                    {state.error}
+                </Typography>
+            )}
+            <Button
+                variant="contained"
+                fullWidth
+                sx={{ minHeight: 48 }}
+                onClick={onGenerateTiles}
+                disabled={state.processing || !state.image}
+                startIcon={<ImageRoundedIcon />}
+            >
+                {state.processing ? 'Processing...' : 'Generate Tiles'}
+            </Button>
+        </Stack>
     );
 };
 

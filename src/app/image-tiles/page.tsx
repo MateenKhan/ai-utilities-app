@@ -1,3 +1,4 @@
+"use client";
 
 import LazyLoaded from '@/components/utilities/LazyLoaded';
 import dynamic from 'next/dynamic';
@@ -10,9 +11,7 @@ const ImageTilesContent = dynamic(() => import('@/components/utilities/ImageTile
 
 export default function ImageTilesPage() {
     return (
-        <LazyLoaded>
-            <ImageTilesContent />
-        </LazyLoaded>
+        <LazyLoaded component={ImageTilesContent} />
     );
 }
 

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
+
+export const dynamic = 'force-dynamic';
 import { uploadFile, getFileUrl, deleteFile } from '@/lib/minio';
 
 async function getUser() {
