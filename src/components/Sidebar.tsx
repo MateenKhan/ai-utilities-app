@@ -20,6 +20,7 @@ import SaveAltRoundedIcon from "@mui/icons-material/SaveAltRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceWalletRounded";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme as useAppTheme } from "@/components/ThemeProvider";
@@ -30,6 +31,7 @@ const NAV_ITEMS = [
   { href: "/bookmarks", label: "Bookmarks", icon: <BookmarkBorderRoundedIcon fontSize="small" sx={{ color: "#9c27b0" }} /> },
   { href: "/calculator", label: "Calculator", icon: <CalculateRoundedIcon fontSize="small" sx={{ color: "#ff9800" }} /> },
   { href: "/image-tiles", label: "Image Tiles", icon: <ImageRoundedIcon fontSize="small" sx={{ color: "#f44336" }} /> },
+  { href: "/finances", label: "Finances", icon: <AccountBalanceWalletRoundedIcon fontSize="small" sx={{ color: "#2196f3" }} /> },
   { href: "/save-load", label: "Save/Load", icon: <SaveAltRoundedIcon fontSize="small" sx={{ color: "#607d8b" }} /> },
 ];
 
