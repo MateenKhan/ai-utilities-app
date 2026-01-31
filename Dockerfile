@@ -16,6 +16,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Copy .env file for build time (will be overridden by runtime env vars)
+COPY .env* ./
+
 # Generate Prisma Client
 RUN apk add --no-cache openssl
 RUN npx prisma generate
@@ -25,10 +28,6 @@ RUN npx prisma generate
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED=1
-
-# Provide dummy DATABASE_URL for build (real one will be provided at runtime)
-ARG DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy?schema=public"
-ENV DATABASE_URL=$DATABASE_URL
 
 RUN npm run build
 
