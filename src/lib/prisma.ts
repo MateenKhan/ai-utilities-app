@@ -6,8 +6,11 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 const createPrismaClient = () => {
     const url = process.env.DATABASE_URL;
-    if (!url) {
-        throw new Error('DATABASE_URL is not set');
+    
+    // Handle missing or dummy DATABASE_URL during build
+    if (!url || url.includes('dummy')) {
+        // For build time with dummy URL, create basic client
+        return new PrismaClient();
     }
     
     // Extract schema from URL
