@@ -16,9 +16,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Copy .env file for build time (will be overridden by runtime env vars)
-COPY .env* ./
-
 # Generate Prisma Client
 RUN apk add --no-cache openssl
 RUN npx prisma generate
@@ -28,6 +25,12 @@ RUN npx prisma generate
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# Set environment variables for the build (hardcoded from .env)
+ENV DATABASE_URL="postgresql://appuser:ecom_admin%402026@72.60.100.239:5432/utility_db?schema=utility_schema"
+ENV JWT_SECRET="your_jwt_secret_key_here_min_32_chars"
+ENV NEXTAUTH_SECRET="your_nextauth_secret_key_here_min_32_chars"
+ENV NEXTAUTH_URL="https://utility.jugaaadi.com"
 
 RUN npm run build
 
